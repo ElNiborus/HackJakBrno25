@@ -6,8 +6,8 @@ table_name = "VectorSearch.DocRefVectors"
 
 create_table_query = f"""
 CREATE TABLE {table_name} (
-ClinicalNotes LONGVARCHAR,
-NotesVector VECTOR(DOUBLE, 384)
+Data LONGVARCHAR,
+DataVector VECTOR(DOUBLE, 384)
 )
 """
 
