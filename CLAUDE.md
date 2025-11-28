@@ -12,6 +12,7 @@ Develop a virtual assistant for University Hospital Brno (FN Brno) to help its 7
 The knowledge base is derived from a mix of structured and unstructured files:
 -   **CSV/Excel (Structured):** Organizational structure, lists of processes, process owners (NI, CI departments), and responsibilities.
 -   **Word Docs (Unstructured):** Internal directives (e.g., Travel Expenses, Organizational Rules of specific clinics).
+See `raw_data/` directory for all data files that are available (several examples for the PoC purposes).
 
 ## Immediate Task (PoC)
 Build a **Single-Turn RAG (Retrieval-Augmented Generation)** prototype using a Vector Database. The vector database must be the InterSystems Vector Search (hackathon rules).
