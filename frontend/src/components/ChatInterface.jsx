@@ -883,10 +883,10 @@ function ChatInterface({ userRole, userId }) {
             
             // Collect all items in the range
             if (matchStartIdx !== -1) {
-              if (matchEndIdx !== -1) {
-                matchStartIdx -= 24
-                matchEndIdx += 24
-              }
+              //if (matchEndIdx !== -1) {
+              //  matchStartIdx -= 24
+              //  matchEndIdx += 24
+              //}
               for (let i = matchStartIdx; i <= (matchEndIdx !== -1 ? matchEndIdx : textContent.items.length - 1); i++) {
                 if (textContent && textContent.items && textContent.items[i] && textContent.items[i].str.trim()) {
                   highlightRects.push(textContent.items[i])

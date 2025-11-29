@@ -4,9 +4,9 @@ import './App.css'
 import logo from '../Resources/logo_nemocnice_bile.png'
 
 const users = [
-  { userId: 1, name: 'Tereza', role: 'Sestřička' },
-  { userId: 2, name: 'Hana', role: 'Vedoucí oddělení' },
-  { userId: 3, name: 'Josef', role: 'Údržbář' }
+  { userId: 1, name: 'Anna', role: 'Sestřička' },
+  { userId: 2, name: 'Marek', role: 'Vedoucí oddělení' },
+  { userId: 3, name: 'Petr', role: 'Údržbář' }
 ]
 
 function App() {
