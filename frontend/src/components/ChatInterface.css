@@ -48,6 +48,23 @@
 
 .message.assistant {
   align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  flex-direction: row;
+}
+
+.message.assistant .message-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+}
+
+.robot-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
 }
 
 .message-content {
@@ -55,6 +72,11 @@
   padding: 0.5rem 0.8rem;
   border-radius: 12px;
   position: relative;
+}
+
+.message.assistant .message-content {
+  max-width: 100%;
+  width: fit-content;
 }
 
 .message.user .message-content {
