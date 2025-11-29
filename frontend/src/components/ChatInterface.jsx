@@ -133,6 +133,7 @@ function DocumentUploadForm({ onSubmit }) {
         <button
           type="submit"
           disabled={isSubmitted}
+          className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
           style={{
             backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
@@ -141,13 +142,17 @@ function DocumentUploadForm({ onSubmit }) {
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: isSubmitted ? 'default' : 'pointer',
-            transition: 'background-color 0.2s'
+            cursor: isSubmitted ? 'default' : 'pointer'
           }}
           onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
           onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
-          {isSubmitted ? '✓' : 'Odeslat'}
+          <div className={`button-content ${isSubmitted ? 'hide' : ''}`}>
+            Odeslat
+          </div>
+          <div className={`checkmark ${isSubmitted ? 'show' : ''}`}>
+            ✓
+          </div>
         </button>
       </form>
     </div>
@@ -407,6 +412,7 @@ function TripExpenseForm({ onSubmit, userId }) {
         <button
           type="submit"
           disabled={isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount}
+          className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
           style={{
             backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
@@ -416,14 +422,18 @@ function TripExpenseForm({ onSubmit, userId }) {
             fontSize: '14px',
             fontWeight: '500',
             cursor: (isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s',
             marginTop: '20px',
             opacity: (availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) && !isSubmitted ? 0.6 : 1
           }}
           onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#1a3378')}
           onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#0B2265')}
         >
-          {isSubmitted ? '✓' : 'Odeslat žádost'}
+          <div className={`button-content ${isSubmitted ? 'hide' : ''}`}>
+            Odeslat žádost
+          </div>
+          <div className={`checkmark ${isSubmitted ? 'show' : ''}`}>
+            ✓
+          </div>
         </button>
       </form>
     </div>
@@ -622,6 +632,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
         <button
           type="submit"
           disabled={isSubmitted || (formData.transport === 'Firemní auto' && !hasReferentskeZkousky)}
+          className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
           style={{
             backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
@@ -630,14 +641,17 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: isSubmitted ? 'default' : 'pointer',
-            transition: 'background-color 0.2s',
-            opacity: isSubmitted ? 1 : 1
+            cursor: isSubmitted ? 'default' : 'pointer'
           }}
           onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
           onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
-          {isSubmitted ? '✓' : 'Odeslat'}
+          <div className={`button-content ${isSubmitted ? 'hide' : ''}`}>
+            Odeslat
+          </div>
+          <div className={`checkmark ${isSubmitted ? 'show' : ''}`}>
+            ✓
+          </div>
         </button>
       </form>
 

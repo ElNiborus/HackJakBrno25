@@ -475,6 +475,71 @@
   }
 }
 
+/* Animated Submit Button */
+.submit-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-button.submitting {
+  background: linear-gradient(135deg, #0B2265, #1a3378) !important;
+  transform: scale(0.95);
+}
+
+.submit-button.submitted {
+  background: linear-gradient(135deg, #0B2265, #1a3378) !important;
+  transform: scale(1);
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.button-content.hide {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.checkmark {
+  position: absolute;
+  font-size: 18px;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s ease 0.1s;
+}
+
+.checkmark.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes checkmark-draw {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-45deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(-45deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.checkmark.show {
+  animation: checkmark-draw 0.5s ease forwards;
+}
+
 /* PDF Sidebar */
 .pdf-sidebar {
   position: fixed;
