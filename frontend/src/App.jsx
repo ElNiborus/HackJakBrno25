@@ -26,7 +26,6 @@ function App() {
               <p className="subtitle">Instituční průvodce strukturou a procesy nemocnice</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: '500', opacity: '0.9' }}>Přihlášení:</span>
               <select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(Number(e.target.value))}
