@@ -467,6 +467,12 @@
   .example-button {
     width: 100%;
   }
+
+  .form-container {
+    width: 95vw !important;
+    max-width: 95vw;
+    margin: 0 auto;
+  }
 }
 
 /* PDF Sidebar */
@@ -576,6 +582,30 @@
   background-repeat: no-repeat;
   background-size: 1em 1em;
   padding-right: 2rem;
+}
+
+/* Form Container Width Consistency */
+.form-container {
+  width: 600px !important;
+  max-width: 90vw;
+  margin: 0 auto;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Ensure all nested content respects container width */
+.form-container * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* File Input Styling */
+.form-container input[type="file"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .form-select:hover {

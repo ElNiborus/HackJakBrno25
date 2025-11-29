@@ -59,7 +59,7 @@ function DocumentUploadForm({ onSubmit }) {
   }
 
   return (
-    <div style={{
+    <div className="form-container" style={{
       backgroundColor: '#f8f9fa',
       padding: '20px',
       borderRadius: '8px',
@@ -93,7 +93,9 @@ function DocumentUploadForm({ onSubmit }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -121,7 +123,9 @@ function DocumentUploadForm({ onSubmit }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -292,7 +296,7 @@ function TripExpenseForm({ onSubmit, userId }) {
   }
 
   return (
-    <div style={{
+    <div className="form-container" style={{
       backgroundColor: '#f8f9fa',
       padding: '20px',
       borderRadius: '8px',
@@ -455,7 +459,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
   }
 
   return (
-    <div style={{
+    <div className="form-container" style={{
       backgroundColor: '#f8f9fa',
       padding: '20px',
       borderRadius: '8px',
@@ -517,7 +521,9 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -545,7 +551,9 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -623,7 +631,11 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
         </button>
       </form>
 
-      {showDocumentUpload && <DocumentUploadForm onSubmit={handleDocumentSubmit} />}
+      {showDocumentUpload && (
+        <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <DocumentUploadForm onSubmit={handleDocumentSubmit} />
+        </div>
+      )}
     </div>
   )
 }
