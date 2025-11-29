@@ -253,7 +253,13 @@ function TripExpenseForm({ onSubmit, userId }) {
   // Load available work trips from localStorage
   useEffect(() => {
     const trips = getWorkTrips(userId)
-    setAvailableTrips(trips)
+    // Sort trips by start date (most recent first)
+    const sortedTrips = trips.sort((a, b) => {
+      const dateA = new Date(a.dateFrom)
+      const dateB = new Date(b.dateFrom)
+      return dateB - dateA // Most recent first
+    })
+    setAvailableTrips(sortedTrips)
   }, [userId])
 
   const handleChange = (e) => {
