@@ -1293,7 +1293,7 @@ function ChatInterface({ userRole, userId }) {
                                       e.target.style.borderColor = '#c5d0de';
                                     }}
                                   >
-                                    Stáhnout
+                                    {sources.length > 1 ? `Úseky 1-${sources.length}` : 'Úsek 1'}
                                   </button>
                                 ) : (
                                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
