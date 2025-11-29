@@ -130,7 +130,7 @@ function DocumentUploadForm({ onSubmit }) {
           type="submit"
           disabled={isSubmitted}
           style={{
-            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
@@ -140,8 +140,8 @@ function DocumentUploadForm({ onSubmit }) {
             cursor: isSubmitted ? 'default' : 'pointer',
             transition: 'background-color 0.2s'
           }}
-          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
+          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
+          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
           {isSubmitted ? '✓' : 'Odeslat'}
         </button>
@@ -329,15 +329,7 @@ function TripExpenseForm({ onSubmit, userId }) {
               onChange={handleChange}
               required
               disabled={isSubmitted}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: '4px',
-                border: '1px solid #ced4da',
-                fontSize: '14px',
-                backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-                cursor: isSubmitted ? 'not-allowed' : 'pointer'
-              }}
+              className="form-select"
             >
               <option value="">Vyberte pracovní cestu...</option>
               {availableTrips.map((trip) => (
@@ -402,7 +394,7 @@ function TripExpenseForm({ onSubmit, userId }) {
           type="submit"
           disabled={isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount}
           style={{
-            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
@@ -414,8 +406,8 @@ function TripExpenseForm({ onSubmit, userId }) {
             marginTop: '20px',
             opacity: (availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) && !isSubmitted ? 0.6 : 1
           }}
-          onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#007bff')}
+          onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#1a3378')}
+          onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#0B2265')}
         >
           {isSubmitted ? '✓' : 'Odeslat žádost'}
         </button>
@@ -573,15 +565,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
             onChange={handleChange}
             required
             disabled={isSubmitted}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              border: '1px solid #ced4da',
-              fontSize: '14px',
-              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
-            }}
+            className="form-select"
           >
             <option value="">Vyberte dopravní prostředek...</option>
             <option value="Veřejná doprava">Veřejná doprava</option>
@@ -621,7 +605,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
           type="submit"
           disabled={isSubmitted || (formData.transport === 'Firemní auto' && !hasReferentskeZkousky)}
           style={{
-            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
@@ -632,8 +616,8 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
             transition: 'background-color 0.2s',
             opacity: isSubmitted ? 1 : 1
           }}
-          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
+          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
+          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
           {isSubmitted ? '✓' : 'Odeslat'}
         </button>
@@ -703,18 +687,38 @@ function ChatInterface({ userRole, userId }) {
   const [currentDocName, setCurrentDocName] = useState('')
   const [currentChunkText, setCurrentChunkText] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [collapsedSources, setCollapsedSources] = useState(() => {
+    // Initialize all sources as collapsed by default
+    const initialCollapsed = {};
+    messages.forEach((msg, idx) => {
+      if (msg.sources && msg.sources.length > 0) {
+        initialCollapsed[`msg-${idx}`] = true;
+      }
+    });
+    return initialCollapsed;
+  })
   const messagesEndRef = useRef(null)
   const recognitionRef = useRef(null)
   const pdfCanvasRef = useRef(null)
   const interimTranscriptRef = useRef('')
+  const sourcesRefs = useRef({})
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const scrollToSource = (key) => {
+  requestAnimationFrame(() => {
+    const el = sourcesRefs.current[key];
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'instant', block: 'start' });
+  });
+};
+
   useEffect(() => {
+    // Only scroll to bottom when messages change, but not when just toggling sources
     scrollToBottom()
-  }, [messages])
+  }, [messages.length])
 
   useEffect(() => {
     // Initialize Speech Recognition
@@ -765,6 +769,20 @@ function ChatInterface({ userRole, userId }) {
     }
   }, [])
 
+  // Handle Escape key to close PDF sidebar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && pdfSidebarOpen) {
+        closePdfSidebar()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [pdfSidebarOpen])
+
   // Load and render PDF when URL changes
   useEffect(() => {
     if (currentPdfUrl && pdfCanvasRef.current && window.pdfjsLib && currentChunkText) {
@@ -773,8 +791,8 @@ function ChatInterface({ userRole, userId }) {
         let targetPage = 1
         let highlightRects = []
         
-        // Normalize text for searching
-        const normalizeText = (text) => text.toLowerCase().replace(/\s+/g, ' ').trim()
+        // Normalize text for searching - keep only alphanumeric characters (including Czech)
+        const normalizeText = (text) => text.toLowerCase().replace(/[^a-záčďéěíňóřšťúůýž0-9]/g, '')
         const chunkNormalized = normalizeText(currentChunkText)
         
         // Find the page containing the chunk
@@ -812,8 +830,9 @@ function ChatInterface({ userRole, userId }) {
           const chunk = chunkNormalized.substring(0, 25);
           for (let i = 0; i <= pageText.length - chunk.length; i+= 5) {
             let sub = pageText.substring(i, i + chunk.length);
-            if (similarity(sub, chunk) >= 0.8) {
+            if (similarity(sub, chunk) >= 0.7) {
               console.log("Found at index", i);
+              console.log("Compared strings:", sub, "AND", chunk);
               chunkStartIndex = i;
               break;
             }
@@ -848,8 +867,12 @@ function ChatInterface({ userRole, userId }) {
             
             // Collect all items in the range
             if (matchStartIdx !== -1) {
+              //if (matchEndIdx !== -1) {
+              //  matchStartIdx -= 24
+              //  matchEndIdx += 24
+              //}
               for (let i = matchStartIdx; i <= (matchEndIdx !== -1 ? matchEndIdx : textContent.items.length - 1); i++) {
-                if (textContent.items[i].str.trim()) {
+                if (textContent && textContent.items && textContent.items[i] && textContent.items[i].str.trim()) {
                   highlightRects.push(textContent.items[i])
                 }
               }
@@ -1011,7 +1034,17 @@ function ChatInterface({ userRole, userId }) {
         timestamp: new Date()
       }
 
-      setMessages(prev => [...prev, assistantMessage])
+      setMessages(prev => {
+        const newMessages = [...prev, assistantMessage];
+        // Set new message sources as collapsed by default
+        if (assistantMessage.sources && assistantMessage.sources.length > 0) {
+          setCollapsedSources(prevCollapsed => ({
+            ...prevCollapsed,
+            [`msg-${newMessages.length - 1}`]: true
+          }));
+        }
+        return newMessages;
+      })
       console.log('[ChatInterface] Message added to state')
 
     } catch (error) {
@@ -1039,14 +1072,24 @@ function ChatInterface({ userRole, userId }) {
   }
 
   const handleDocumentClick = (documentName, chunkText) => {
-    // Open PDF in sidebar
-    const pdfName = documentName.replace(/\.[^/.]+$/, ".pdf");
-    const pdfUrl = `${API_URL}/view-pdf/${pdfName}`;
-    console.log('[ChatInterface] Opening PDF:', pdfUrl)
-    setCurrentPdfUrl(pdfUrl)
-    setCurrentDocName(documentName)
-    setCurrentChunkText(chunkText)
-    setPdfSidebarOpen(true)
+    // Get file extension
+    const extension = documentName.split('.').pop().toLowerCase();
+    
+    if (extension === 'xlsx') {
+      // For Excel files, trigger download
+      const downloadUrl = `${API_URL}/download/${documentName}`;
+      console.log('[ChatInterface] Downloading file:', downloadUrl)
+      window.open(downloadUrl, '_blank');
+    } else {
+      // For docx and other files, open PDF in sidebar
+      const pdfName = documentName.replace(/\.[^/.]+$/, ".pdf");
+      const pdfUrl = `${API_URL}/view-pdf/${pdfName}`;
+      console.log('[ChatInterface] Opening PDF:', pdfUrl)
+      setCurrentPdfUrl(pdfUrl)
+      setCurrentDocName(documentName)
+      setCurrentChunkText(chunkText)
+      setPdfSidebarOpen(true)
+    }
   }
 
   const closePdfSidebar = () => {
@@ -1087,7 +1130,15 @@ function ChatInterface({ userRole, userId }) {
         <div className="messages-container">
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.type}`}>
-              <div className="message-content">
+              {message.type === 'assistant' ? (
+                <>
+                  <img
+                    src="/robot.png"
+                    alt="Robot Assistant"
+                    className="robot-avatar"
+                  />
+                  <div className="message-wrapper">
+                    <div className="message-content">
                 {message.actionType === 'show_trip_form' ? (
                   <>
                     <div className="message-text">{renderTextWithLinks(message.text)}</div>
@@ -1110,57 +1161,237 @@ function ChatInterface({ userRole, userId }) {
                     <div className="message-text">{renderTextWithLinks(message.text)}</div>
 
                     {message.sources && message.sources.length > 0 && (
-                      <div className="sources-section">
-                        <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
-                        {message.sources.map((source, idx) => (
-                          <div
-                            key={idx}
-                            className="source-item"
-                            onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <div className="source-name">
-                              {source.document_name}
-                              <span className="relevance-score">
-                                ({(source.relevance_score * 100).toFixed(0)}% shoda)
-                              </span>
-                            </div>
-                            {source.metadata?.department && (
-                              <div className="source-metadata">
-                                📍 Oddělení: {source.metadata.department}
+                      <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>
+                        <div 
+                          className="sources-header" 
+                          onClick={() => {
+                            const messageKey = `msg-${index}`;
+                            const isCurrentlyCollapsed = collapsedSources[messageKey];
+                            setCollapsedSources(prev => ({
+                              ...prev,
+                              [messageKey]: !prev[messageKey]
+                            }));
+                            // If expanding, scroll to show the content
+                            if (isCurrentlyCollapsed) {
+                              scrollToSource(messageKey);
+                            }
+                          }}
+                          style={{ cursor: 'pointer', userSelect: 'none' }}
+                        >
+                          <span style={{ 
+                            marginRight: '8px',
+                            display: 'inline-block',
+                            transition: 'transform 0.2s',
+                            transform: collapsedSources[`msg-${index}`] ? 'rotate(-90deg)' : 'rotate(0deg)'
+                          }}>
+                            ▼
+                          </span>
+                          📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}
+                        </div>
+                        {!collapsedSources[`msg-${index}`] && (() => {
+                          // Sort sources by document_name
+                          const sortedSources = [...message.sources].sort((a, b) => 
+                            a.document_name.localeCompare(b.document_name, 'cs')
+                          );
+                          
+                          // Group by document_name
+                          const groupedSources = {};
+                          sortedSources.forEach(source => {
+                            if (!groupedSources[source.document_name]) {
+                              groupedSources[source.document_name] = [];
+                            }
+                            groupedSources[source.document_name].push(source);
+                          });
+                          
+                          return Object.entries(groupedSources).map(([docName, sources], groupIdx) => {
+                            const isXlsx = docName.toLowerCase().endsWith('.xlsx');
+                            
+                            return (
+                              <div key={groupIdx} style={{ 
+                                display: 'flex', 
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 14px',
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '8px',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                transition: 'box-shadow 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'}
+                              onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}>
+                                <span style={{ flex: 1, fontWeight: '500', color: '#333' }}>{docName}</span>
+                                {isXlsx ? (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDocumentClick(sources[0].document_name, sources[0].chunk_text);
+                                    }}
+                                    style={{
+                                      backgroundColor: '#e8eef8',
+                                      color: '#0B2265',
+                                      border: '1px solid #c5d0de',
+                                      borderRadius: '6px',
+                                      padding: '6px 14px',
+                                      fontSize: '13px',
+                                      fontWeight: '500',
+                                      cursor: 'pointer',
+                                      whiteSpace: 'nowrap',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#d4dcec';
+                                      e.target.style.borderColor = '#1a3378';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = '#e8eef8';
+                                      e.target.style.borderColor = '#c5d0de';
+                                    }}
+                                  >
+                                    {sources.length > 1 ? `Úseky 1-${sources.length}` : 'Úsek 1'}
+                                  </button>
+                                ) : (
+                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                    {sources.map((source, idx) => (
+                                      <button
+                                        key={idx}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDocumentClick(source.document_name, source.chunk_text);
+                                        }}
+                                        style={{
+                                          backgroundColor: '#e8eef8',
+                                          color: '#0B2265',
+                                          border: '1px solid #c5d0de',
+                                          borderRadius: '6px',
+                                          padding: '6px 12px',
+                                          fontSize: '13px',
+                                          fontWeight: '500',
+                                          cursor: 'pointer',
+                                          whiteSpace: 'nowrap',
+                                          transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.target.style.backgroundColor = '#d4dcec';
+                                          e.target.style.borderColor = '#1a3378';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.target.style.backgroundColor = '#e8eef8';
+                                          e.target.style.borderColor = '#c5d0de';
+                                        }}
+                                      >
+                                        Úsek {idx + 1}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {source.metadata?.process_owner && (
-                              <div className="source-metadata">
-                                👤 Vlastník procesu: {source.metadata.process_owner}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                            );
+                          });
+                        })()}
                       </div>
                     )}
-                  </>
-                )}
-              </div>
+                    </>
+                  )}
+                </div>
 
-              <div className="message-timestamp">
-                {formatTime(message.timestamp)}
-                {message.processingTime && (
-                  <span className="processing-time">
-                    {' '}• {message.processingTime.toFixed(2)}s
-                  </span>
-                )}
-              </div>
+                  <div className="message-timestamp">
+                    {formatTime(message.timestamp)}
+                    {message.processingTime && (
+                      <span className="processing-time">
+                        {' '}• {message.processingTime.toFixed(2)}s
+                      </span>
+                    )}
+                  </div>
+                </div>
+                </>
+              ) : (
+                <>
+                  <div className="message-content">
+                    {message.actionType === 'show_trip_form' ? (
+                      <>
+                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                        <TravelForm
+                          onSubmit={handleFormSubmit}
+                          onDocumentUpload={handleDocumentUpload}
+                          userId={userId}
+                        />
+                      </>
+                    ) : message.actionType === 'show_expense_form' ? (
+                      <>
+                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                        <TripExpenseForm
+                          onSubmit={handleForm2Submit}
+                          userId={userId}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>
+                            <div
+                              className="sources-header"
+                              onClick={() => {
+                                const messageKey = `msg-${index}`;
+                                const isCurrentlyCollapsed = collapsedSources[messageKey];
+                                setCollapsedSources(prev => ({
+                                  ...prev,
+                                  [messageKey]: !prev[messageKey]
+                                }));
+                                // If expanding, scroll to show the content
+                                if (isCurrentlyCollapsed) {
+                                  scrollToSource(messageKey);
+                                }
+                              }}
+                              style={{ cursor: 'pointer', userSelect: 'none' }}
+                            >
+                              <span style={{
+                                marginRight: '8px',
+                                display: 'inline-block',
+                                transition: 'transform 0.2s',
+                                transform: collapsedSources[`msg-${index}`] ? 'rotate(-90deg)' : 'rotate(0deg)'
+                              }}>
+                                ▼
+                              </span>
+                              📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}
+                            </div>
+                            {/* ... rest of sources content would go here ... */}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="message-timestamp">
+                    {formatTime(message.timestamp)}
+                    {message.processingTime && (
+                      <span className="processing-time">
+                        {' '}• {message.processingTime.toFixed(2)}s
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
 
           {isLoading && (
             <div className="message assistant">
-              <div className="message-content">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+              <img
+                src="/robot.png"
+                alt="Robot Assistant"
+                className="robot-avatar"
+              />
+              <div className="message-wrapper">
+                <div className="message-content">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1168,40 +1399,6 @@ function ChatInterface({ userRole, userId }) {
 
           <div ref={messagesEndRef} />
         </div>
-
-        <form onSubmit={handleSubmit} className="input-container">
-          <button
-            type="button"
-            onClick={toggleVoiceInput}
-            disabled={isLoading}
-            className={`voice-button ${isListening ? 'listening' : ''}`}
-            aria-label={isListening ? 'Zastavit nahrávání' : 'Začít hlasové zadávání'}
-            title={isListening ? 'Zastavit nahrávání' : 'Hlasové zadávání'}
-          >
-            {isListening ? '🔴' : '🎤'}
-          </button>
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Napište svou otázku..."
-            disabled={isLoading}
-            className="chat-input"
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !inputValue.trim()}
-            className="send-button"
-          >
-            {isLoading ? (
-              '⏳'
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-          </button>
-        </form>
 
         {!messages.some(m => m.type === 'user') && (
           <div className="example-queries">
@@ -1231,6 +1428,53 @@ function ChatInterface({ userRole, userId }) {
             </div>
           </div>
         )}
+
+        <form onSubmit={handleSubmit} className="input-container">
+          <div className="input-wrapper">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Napište svou otázku..."
+              disabled={isLoading}
+              className="chat-input"
+            />
+            <button
+              type="button"
+              onClick={toggleVoiceInput}
+              disabled={isLoading}
+              className={`voice-button ${isListening ? 'listening' : ''}`}
+              aria-label={isListening ? 'Zastavit nahrávání' : 'Začít hlasové zadávání'}
+              title={isListening ? 'Zastavit nahrávání' : 'Hlasové zadávání'}
+            >
+              {isListening ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="8" fill="#dc2626" stroke="#dc2626" strokeWidth="2"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="4" width="6" height="10" rx="3" stroke="#6b7280" strokeWidth="2"/>
+                  <path d="M6 12C6 15.3137 8.68629 18 12 18C15.3137 18 18 15.3137 18 12" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="12" y1="18" x2="12" y2="21" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="9" y1="21" x2="15" y2="21" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              )}
+            </button>
+          </div>
+          <button
+            type="submit"
+            disabled={isLoading || !inputValue.trim()}
+            className="send-button"
+          >
+            {isLoading ? (
+              '⏳'
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </button>
+        </form>
       </div>
 
       {/* PDF Sidebar */}
