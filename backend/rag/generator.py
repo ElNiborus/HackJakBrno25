@@ -63,12 +63,16 @@ Odpověz na otázku zaměstnance na základě výše uvedeného kontextu."""
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                temperature=0.3,  # Lower temperature for more focused answers
-                max_tokens=1000
+                # Note: gpt-5-mini only supports default temperature (1)
+                max_completion_tokens=1000  # gpt-5-mini uses max_completion_tokens
             )
 
+            logger.info(f"OpenAI response: {response}")
+            logger.info(f"Response choices: {response.choices}")
+            logger.info(f"Message: {response.choices[0].message}")
             answer = response.choices[0].message.content
-            logger.info("Response generated successfully")
+            logger.info(f"Response generated successfully. Answer length: {len(answer) if answer else 0}")
+            logger.info(f"Answer content: {answer[:200] if answer else 'EMPTY/NULL'}")
             return answer
 
         except Exception as e:

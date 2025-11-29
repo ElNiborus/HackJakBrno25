@@ -7,7 +7,7 @@ Virtual assistant for University Hospital Brno (FN Brno) - A RAG-based chatbot t
 This project was created as a PoC (Proof of Concept) for a hackathon. The system uses:
 - **RAG (Retrieval-Augmented Generation)** for answering employee questions
 - **InterSystems IRIS Vector Search** as the vector database
-- **OpenAI GPT-4** for response generation
+- **OpenAI GPT-5-mini** for response generation
 - **FastAPI** backend with **React** frontend
 
 ## Architecture
@@ -553,7 +553,7 @@ Frontend runs at `http://localhost:3000`
 3. The system:
    - Converts question to embedding
    - Finds relevant documents in IRIS database
-   - Provides context to OpenAI GPT-4
+   - Provides context to OpenAI models
    - Generates answer in Czech
    - Displays information sources
 
