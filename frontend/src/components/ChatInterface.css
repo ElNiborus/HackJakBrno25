@@ -65,6 +65,15 @@
   border-radius: 50%;
   flex-shrink: 0;
   margin-top: 0.25rem;
+  border: 2px solid #c5d0de;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.robot-avatar:hover {
+  transform: scale(1.1);
+  border-color: #1976d2;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
 }
 
 .message-content {
