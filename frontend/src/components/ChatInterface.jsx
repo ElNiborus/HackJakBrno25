@@ -4,6 +4,39 @@ import './ChatInterface.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+// localStorage utilities for work trips
+// FORM1 saves work trips to localStorage for each user
+// FORM2 loads saved trips and allows user to select one for expense reporting
+const WORK_TRIPS_KEY = 'fnBrnoWorkTrips'
+
+function saveWorkTrip(userId, tripData) {
+  try {
+    const existingTrips = getWorkTrips(userId)
+    const newTrip = {
+      id: Date.now(), // Simple ID based on timestamp
+      ...tripData,
+      createdAt: new Date().toISOString(),
+      status: 'submitted'
+    }
+    existingTrips.push(newTrip)
+    localStorage.setItem(`${WORK_TRIPS_KEY}_${userId}`, JSON.stringify(existingTrips))
+    return newTrip
+  } catch (error) {
+    console.error('Error saving work trip to localStorage:', error)
+    return null
+  }
+}
+
+function getWorkTrips(userId) {
+  try {
+    const trips = localStorage.getItem(`${WORK_TRIPS_KEY}_${userId}`)
+    return trips ? JSON.parse(trips) : []
+  } catch (error) {
+    console.error('Error reading work trips from localStorage:', error)
+    return []
+  }
+}
+
 // Document Upload Form Component
 function DocumentUploadForm({ onSubmit }) {
   const [files, setFiles] = useState({
@@ -111,6 +144,236 @@ function DocumentUploadForm({ onSubmit }) {
           onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
         >
           {isSubmitted ? '✓' : 'Odeslat'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
+// Receipt Upload Component for FORM2 (inline component)
+function ReceiptUploadSection({ receipts, onReceiptChange, isSubmitted }) {
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files)
+    onReceiptChange(files)
+  }
+
+  const removeFile = (index) => {
+    if (!isSubmitted) {
+      const newReceipts = receipts.filter((_, i) => i !== index)
+      onReceiptChange(newReceipts)
+    }
+  }
+
+  return (
+    <div style={{ marginTop: '20px' }}>
+      <label style={{
+        display: 'block',
+        marginBottom: '10px',
+        fontWeight: '500',
+        color: '#555'
+      }}>
+        Účtenky a doklady:
+      </label>
+
+      <input
+        type="file"
+        multiple
+        onChange={handleFileChange}
+        disabled={isSubmitted}
+        accept=".pdf,.jpg,.jpeg,.png"
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          border: '1px solid #ced4da',
+          fontSize: '14px',
+          backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+          cursor: isSubmitted ? 'not-allowed' : 'pointer',
+          marginBottom: '10px'
+        }}
+      />
+
+      {receipts.length > 0 && (
+        <div style={{
+          backgroundColor: '#f8f9fa',
+          padding: '10px',
+          borderRadius: '4px',
+          border: '1px solid #dee2e6',
+          marginBottom: '10px'
+        }}>
+          <div style={{ fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+            Vybrané soubory ({receipts.length}):
+          </div>
+          {receipts.map((file, index) => (
+            <div key={index} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '4px 0',
+              fontSize: '13px'
+            }}>
+              <span>{file.name}</span>
+              {!isSubmitted && (
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#dc3545',
+                    cursor: 'pointer',
+                    fontSize: '16px'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Trip Expense Form Component (FORM2)
+function TripExpenseForm({ onSubmit, userId }) {
+  const [formData, setFormData] = useState({
+    selectedTripId: '',
+    receipts: []
+  })
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [availableTrips, setAvailableTrips] = useState([])
+
+  // Load available work trips from localStorage
+  useEffect(() => {
+    const trips = getWorkTrips(userId)
+    setAvailableTrips(trips)
+  }, [userId])
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const handleReceiptChange = (receipts) => {
+    setFormData({
+      ...formData,
+      receipts: receipts
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setIsSubmitted(true)
+
+    // Find the selected trip
+    const selectedTrip = availableTrips.find(trip => trip.id.toString() === formData.selectedTripId)
+
+    onSubmit({
+      ...formData,
+      selectedTrip: selectedTrip
+    })
+  }
+
+  const formatTripOption = (trip) => {
+    const formatDate = (dateStr) => {
+      const date = new Date(dateStr)
+      return date.toLocaleDateString('cs-CZ', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })
+    }
+    return `${trip.destination} (${formatDate(trip.dateFrom)} - ${formatDate(trip.dateTo)})`
+  }
+
+  return (
+    <div style={{
+      backgroundColor: '#f8f9fa',
+      padding: '20px',
+      borderRadius: '8px',
+      border: '1px solid #dee2e6'
+    }}>
+      <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#333' }}>
+        Formulář pro vyúčtování pracovní cesty
+      </h3>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Vyberte pracovní cestu:
+          </label>
+          {availableTrips.length === 0 ? (
+            <div style={{
+              padding: '12px',
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '4px',
+              color: '#856404',
+              fontSize: '14px'
+            }}>
+              Nemáte žádné uložené pracovní cesty. Nejprve vyplňte formulář pro pracovní cestu (FORM).
+            </div>
+          ) : (
+            <select
+              name="selectedTripId"
+              value={formData.selectedTripId}
+              onChange={handleChange}
+              required
+              disabled={isSubmitted}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                border: '1px solid #ced4da',
+                fontSize: '14px',
+                backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+                cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <option value="">Vyberte pracovní cestu...</option>
+              {availableTrips.map((trip) => (
+                <option key={trip.id} value={trip.id}>
+                  {formatTripOption(trip)}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <ReceiptUploadSection
+          receipts={formData.receipts}
+          onReceiptChange={handleReceiptChange}
+          isSubmitted={isSubmitted}
+        />
+
+        <button
+          type="submit"
+          disabled={isSubmitted || availableTrips.length === 0 || !formData.selectedTripId}
+          style={{
+            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: (isSubmitted || availableTrips.length === 0 || !formData.selectedTripId) ? 'not-allowed' : 'pointer',
+            transition: 'background-color 0.2s',
+            marginTop: '20px',
+            opacity: (availableTrips.length === 0 || !formData.selectedTripId) && !isSubmitted ? 0.6 : 1
+          }}
+          onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && (e.target.style.backgroundColor = '#0056b3')}
+          onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && (e.target.style.backgroundColor = '#007bff')}
+        >
+          {isSubmitted ? '✓' : 'Odeslat žádost'}
         </button>
       </form>
     </div>
@@ -551,8 +814,15 @@ function ChatInterface({ userRole, userId }) {
   }, [currentPdfUrl, currentChunkText])
 
   const handleFormSubmit = (formData) => {
-    // Handle form submission - just thank the user
+    // Save work trip to localStorage for the current user
+    const savedTrip = saveWorkTrip(userId, formData)
+
+    // Handle form submission - thank the user
     let messageText = `Děkuji za vyplnění formuláře!\n\nVaše údaje:\n- Destinace: ${formData.destination}\n- Od: ${formData.dateFrom}\n- Do: ${formData.dateTo}\n- Dopravní prostředek: ${formData.transport}`
+
+    if (savedTrip) {
+      messageText += `\n\nPracovní cesta byla uložena do systému pro pozdější vyúčtování.`
+    }
 
     // Only show thank you if not Osobní auto (document upload will be shown)
     if (formData.transport !== 'Osobní auto') {
@@ -575,6 +845,35 @@ function ChatInterface({ userRole, userId }) {
     setMessages(prev => [...prev, thankYouMessage])
   }
 
+  const handleForm2Submit = (formData) => {
+    // Handle trip expense form submission
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'Nezadáno'
+      const date = new Date(dateStr)
+      return date.toLocaleDateString('cs-CZ', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })
+    }
+
+    const receiptsList = formData.receipts.length > 0
+      ? formData.receipts.map((file, index) => `  ${index + 1}. ${file.name}`).join('\n')
+      : '  (žádné soubory nebyly nahrány)'
+
+    const selectedTrip = formData.selectedTrip
+    const tripDetails = selectedTrip
+      ? `\n\nVybraná pracovní cesta:\n- Destinace: ${selectedTrip.destination}\n- Od: ${formatDate(selectedTrip.dateFrom)}\n- Do: ${formatDate(selectedTrip.dateTo)}\n- Dopravní prostředek: ${selectedTrip.transport}`
+      : '\n\nChyba: Nebyla vybrána žádná pracovní cesta.'
+
+    const thankYouMessage = {
+      type: 'assistant',
+      text: `Děkuji za vyplnění formuláře pro vyúčtování pracovní cesty!${tripDetails}\n\nPočet nahraných účtenek: ${formData.receipts.length}\n\nNahrané soubory:\n${receiptsList}\n\nVaše žádost o vyúčtování byla úspěšně odeslána ke schválení.`,
+      timestamp: new Date()
+    }
+    setMessages(prev => [...prev, thankYouMessage])
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -591,6 +890,25 @@ function ChatInterface({ userRole, userId }) {
       const formMessage = {
         type: 'assistant',
         isForm: true,
+        timestamp: new Date()
+      }
+
+      setMessages(prev => [...prev, userMessage, formMessage])
+      setInputValue('')
+      return
+    }
+
+    // Check if user typed "FORM2"
+    if (inputValue.trim().toUpperCase() === 'FORM2') {
+      const userMessage = {
+        type: 'user',
+        text: inputValue,
+        timestamp: new Date()
+      }
+
+      const formMessage = {
+        type: 'assistant',
+        isForm2: true,
         timestamp: new Date()
       }
 
@@ -717,6 +1035,8 @@ function ChatInterface({ userRole, userId }) {
               <div className="message-content">
                 {message.isForm ? (
                   <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
+                ) : message.isForm2 ? (
+                  <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
                 ) : (
                   <>
                     <div className="message-text">{renderTextWithLinks(message.text)}</div>
