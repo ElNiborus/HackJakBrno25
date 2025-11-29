@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     top_k_results: int = 5
     min_relevance_score: float = 0.0
 
+    # Conversation Configuration
+    max_history_messages: int = 10
+    router_model: str = "gpt-5-mini"
+    router_reasoning_effort: str = "minimal"
+
     class Config:
         env_file = ".env"
         case_sensitive = False

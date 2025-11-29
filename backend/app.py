@@ -7,12 +7,15 @@ import time
 import os
 from pathlib import Path
 
-from models.schemas import QueryRequest, QueryResponse
+from models.schemas import QueryRequest, QueryResponse, ChatRequest, ChatResponse, Message
 from iris_db import IRISVectorDB
 from ingestion.embedder import EmbeddingGenerator
 from rag.retriever import VectorRetriever
 from rag.generator import ResponseGenerator
+from conversation.session_manager import SessionManager
+from rag.router import RAGRouter
 from config import get_settings
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(
@@ -26,12 +29,14 @@ db = None
 embedder = None
 retriever = None
 generator = None
+session_manager = None
+rag_router = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    global db, embedder, retriever, generator
+    global db, embedder, retriever, generator, session_manager, rag_router
 
     # Startup
     logger.info("Starting up FN Brno Virtual Assistant API")
@@ -49,6 +54,10 @@ async def lifespan(app: FastAPI):
         logger.info("Initializing retriever and generator...")
         retriever = VectorRetriever(db, embedder)
         generator = ResponseGenerator()
+
+        logger.info("Initializing session manager and RAG router...")
+        session_manager = SessionManager()
+        rag_router = RAGRouter()
 
         logger.info("Startup complete!")
 
@@ -170,6 +179,126 @@ async def get_stats():
         }
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    """
+    Multi-turn conversation endpoint with agentic RAG routing.
+
+    Args:
+        request: Chat request with query and optional session ID
+
+    Returns:
+        ChatResponse with answer, sources, and session ID
+    """
+    start_time = time.time()
+
+    try:
+        # Get or create session
+        if request.session_id and session_manager.session_exists(request.session_id):
+            session_id = request.session_id
+            history = session_manager.get_session(session_id)
+            logger.info(f"Using existing session: {session_id} with {len(history)} messages")
+        else:
+            session_id = session_manager.create_session()
+            history = []
+            logger.info(f"Created new session: {session_id}")
+
+        # Add user message to history
+        user_message = Message(
+            role="user",
+            content=request.query,
+            timestamp=datetime.now()
+        )
+        session_manager.add_message(session_id, user_message)
+
+        # Decide whether to use RAG
+        needs_rag = rag_router.should_use_rag(request.query, history)
+        logger.info(f"RAG routing decision: needs_rag={needs_rag}")
+
+        # Retrieve context if needed
+        sources = []
+        context = None
+        if needs_rag:
+            retrieved_chunks = retriever.retrieve(request.query)
+            if retrieved_chunks:
+                # Format context
+                context = retriever.format_context_for_llm(retrieved_chunks)
+                # Format sources
+                sources = [
+                    {
+                        'document_name': chunk['document_name'],
+                        'chunk_text': chunk['chunk_text'][:200] + '...' if len(chunk['chunk_text']) > 200 else chunk['chunk_text'],
+                        'relevance_score': chunk['relevance_score'],
+                        'metadata': {
+                            'department': chunk.get('department'),
+                            'process_owner': chunk.get('process_owner')
+                        }
+                    }
+                    for chunk in retrieved_chunks
+                ]
+            else:
+                logger.warning("No relevant chunks found despite RAG routing")
+
+        # Generate response with history and optional context
+        answer = generator.generate_response(
+            query=request.query,
+            context=context,
+            history=history
+        )
+
+        # Create assistant message
+        assistant_message = Message(
+            role="assistant",
+            content=answer,
+            timestamp=datetime.now(),
+            sources=sources if needs_rag else None
+        )
+        session_manager.add_message(session_id, assistant_message)
+
+        processing_time = time.time() - start_time
+        logger.info(f"Chat processed in {processing_time:.2f}s")
+
+        return ChatResponse(
+            session_id=session_id,
+            message=assistant_message,
+            used_rag=needs_rag,
+            sources=sources,
+            processing_time=processing_time
+        )
+
+    except Exception as e:
+        logger.error(f"Error processing chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/chat/history/{session_id}")
+async def get_chat_history(session_id: str):
+    """
+    Retrieve conversation history for a session.
+
+    Args:
+        session_id: Session ID to retrieve
+
+    Returns:
+        Conversation history
+    """
+    try:
+        if not session_manager.session_exists(session_id):
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+        history = session_manager.get_session(session_id)
+        return {
+            "session_id": session_id,
+            "messages": history
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving chat history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

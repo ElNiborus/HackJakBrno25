@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Literal
+from datetime import datetime
 
 
 class QueryRequest(BaseModel):
@@ -26,3 +27,27 @@ class DocumentChunk(BaseModel):
     chunk_text: str
     chunk_index: int
     metadata: dict
+
+
+# Multi-turn conversation models
+class Message(BaseModel):
+    """Single message in a conversation"""
+    role: Literal["user", "assistant"]
+    content: str
+    timestamp: datetime
+    sources: Optional[List[SourceReference]] = None  # Only for assistant messages with RAG
+
+
+class ChatRequest(BaseModel):
+    """Request for chat endpoint with optional session ID"""
+    query: str
+    session_id: Optional[str] = None  # If None, create new session
+
+
+class ChatResponse(BaseModel):
+    """Response from chat endpoint"""
+    session_id: str
+    message: Message  # The assistant's response
+    used_rag: bool  # Whether RAG retrieval was used
+    sources: List[SourceReference]  # Empty if used_rag=False
+    processing_time: float
