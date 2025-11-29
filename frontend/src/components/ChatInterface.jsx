@@ -45,7 +45,7 @@ function renderTextWithLinks(text) {
   return parts.length > 0 ? parts : text
 }
 
-function ChatInterface() {
+function ChatInterface({ userRole, userId }) {
   const [messages, setMessages] = useState([
     {
       type: 'assistant',
@@ -56,7 +56,15 @@ function ChatInterface() {
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [sessionId, setSessionId] = useState(null)
+  const [isListening, setIsListening] = useState(false)
+  const [keywordResults, setKeywordResults] = useState([])
+  const [pdfSidebarOpen, setPdfSidebarOpen] = useState(false)
+  const [currentPdfUrl, setCurrentPdfUrl] = useState(null)
+  const [currentDocName, setCurrentDocName] = useState('')
+  const [currentChunkText, setCurrentChunkText] = useState('')
   const messagesEndRef = useRef(null)
+  const recognitionRef = useRef(null)
+  const pdfCanvasRef = useRef(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -65,6 +73,135 @@ function ChatInterface() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    // Initialize Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition()
+      recognition.continuous = false
+      recognition.lang = 'cs-CZ' // Czech language
+      recognition.interimResults = false
+      recognition.maxAlternatives = 1
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript
+        setInputValue(transcript)
+        setIsListening(false)
+      }
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error)
+        setIsListening(false)
+      }
+
+      recognition.onend = () => {
+        setIsListening(false)
+      }
+
+      recognitionRef.current = recognition
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop() } catch (e) { /* ignore */ }
+      }
+    }
+  }, [])
+
+  // Load and render PDF when URL changes
+  useEffect(() => {
+    if (currentPdfUrl && pdfCanvasRef.current && window.pdfjsLib && currentChunkText) {
+      const loadingTask = window.pdfjsLib.getDocument(currentPdfUrl)
+      loadingTask.promise.then(async (pdf) => {
+        let targetPage = 1
+        let highlightRects = []
+        
+        // Normalize text for searching
+        const normalizeText = (text) => text.toLowerCase().replace(/\s+/g, ' ').trim()
+        const chunkNormalized = normalizeText(currentChunkText)
+        
+        // Find the page containing the chunk
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum)
+          const textContent = await page.getTextContent()
+          const pageText = normalizeText(textContent.items.map(item => item.str).join(' '))
+          
+          // Check if this page contains the chunk (using first 50 chars)
+          const chunkStartIndex = pageText.indexOf(chunkNormalized.substring(0, 50))
+          
+          if (chunkStartIndex !== -1) {
+            targetPage = pageNum
+            
+            // Build the page text with item indices to find matching items
+            let currentPos = 0
+            let matchStartIdx = -1
+            let matchEndIdx = -1
+            
+            for (let i = 0; i < textContent.items.length; i++) {
+              const item = textContent.items[i]
+              const itemText = normalizeText(item.str)
+              const itemLength = itemText.length
+              
+              // Check if chunk starts within this item
+              if (matchStartIdx === -1 && currentPos <= chunkStartIndex && currentPos + itemLength > chunkStartIndex) {
+                matchStartIdx = i
+              }
+              
+              // Check if chunk ends within this item
+              if (matchStartIdx !== -1 && currentPos + itemLength >= chunkStartIndex + chunkNormalized.length) {
+                matchEndIdx = i
+                break
+              }
+              
+              currentPos += itemLength + 1 // +1 for space
+            }
+            
+            // Collect all items in the range
+            if (matchStartIdx !== -1) {
+              for (let i = matchStartIdx; i <= (matchEndIdx !== -1 ? matchEndIdx : textContent.items.length - 1); i++) {
+                if (textContent.items[i].str.trim()) {
+                  highlightRects.push(textContent.items[i])
+                }
+              }
+            }
+            
+            break
+          }
+        }
+        
+        // Render the page
+        const page = await pdf.getPage(targetPage)
+        const canvas = pdfCanvasRef.current
+        if (!canvas) return
+        
+        const context = canvas.getContext('2d')
+        const viewport = page.getViewport({ scale: 1.5 })
+        
+        canvas.height = viewport.height
+        canvas.width = viewport.width
+        
+        await page.render({ canvasContext: context, viewport }).promise
+        
+        // Draw continuous highlight
+        console.log('Highlighting items:', highlightRects.length)
+        if (highlightRects.length > 0) {
+          context.fillStyle = 'rgba(255, 255, 0, 0.4)'
+          highlightRects.forEach(item => {
+            if (item.transform) {
+              const [x, y] = viewport.convertToViewportPoint(item.transform[4], item.transform[5])
+              const width = item.width * viewport.scale
+              const height = (item.height || 12) * viewport.scale
+              context.fillRect(x, y - height, width, height)
+            }
+          })
+        }
+      }).catch(error => console.error('Error loading PDF:', error))
+    }
+    // log the chunks
+    console.log('[ChatInterface] Current chunk text:', currentChunkText)
+  }, [currentPdfUrl, currentChunkText])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -89,6 +226,7 @@ function ChatInterface() {
     try {
       // Call chat endpoint with session tracking
       console.log('[ChatInterface] Making POST request to /chat...')
+      console.log('[ChatInterface] User role:', userRole, 'User ID:', userId)
       const requestBody = { query }
       if (sessionId) {
         requestBody.session_id = sessionId
@@ -139,13 +277,44 @@ function ChatInterface() {
     }
   }
 
-  const handleDocumentClick = (documentName) => {
-    // Download/open the document
-    window.open(`${API_URL}/download/${documentName}`, '_blank')
+  const handleDocumentClick = (documentName, chunkText) => {
+    // Open PDF in sidebar
+    const pdfUrl = `${API_URL}/view-pdf/${documentName}`
+    setCurrentPdfUrl(pdfUrl)
+    setCurrentDocName(documentName)
+    setCurrentChunkText(chunkText)
+    setPdfSidebarOpen(true)
+  }
+
+  const closePdfSidebar = () => {
+    setPdfSidebarOpen(false)
+    setCurrentPdfUrl(null)
+    setCurrentDocName('')
+    setCurrentChunkText('')
   }
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert('Hlasové ovládání není podporováno ve vašem prohlížeči.')
+      return
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch (error) {
+        console.error('Error starting speech recognition:', error)
+        setIsListening(false)
+      }
+    }
   }
 
   return (
@@ -164,7 +333,7 @@ function ChatInterface() {
                       <div
                         key={idx}
                         className="source-item"
-                        onClick={() => handleDocumentClick(source.document_name)}
+                        onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
                         style={{ cursor: 'pointer' }}
                       >
                         <div className="source-name">
@@ -216,6 +385,16 @@ function ChatInterface() {
         </div>
 
         <form onSubmit={handleSubmit} className="input-container">
+          <button
+            type="button"
+            onClick={toggleVoiceInput}
+            disabled={isLoading}
+            className={`voice-button ${isListening ? 'listening' : ''}`}
+            aria-label={isListening ? 'Zastavit nahrávání' : 'Začít hlasové zadávání'}
+            title={isListening ? 'Zastavit nahrávání' : 'Hlasové zadávání'}
+          >
+            {isListening ? '🔴' : '🎤'}
+          </button>
           <input
             type="text"
             value={inputValue}
@@ -268,8 +447,24 @@ function ChatInterface() {
           </div>
         )}
       </div>
+
+      {/* PDF Sidebar */}
+      {pdfSidebarOpen && (
+        <div className="pdf-sidebar">
+          <div className="pdf-sidebar-header">
+            <h3>{currentDocName}</h3>
+            <button onClick={closePdfSidebar} className="close-sidebar-btn">
+              ✕
+            </button>
+          </div>
+          <div className="pdf-sidebar-content">
+            <canvas ref={pdfCanvasRef}></canvas>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 export default ChatInterface
+

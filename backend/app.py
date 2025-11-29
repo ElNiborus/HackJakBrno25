@@ -155,7 +155,7 @@ async def query(request: QueryRequest):
 
         processing_time = time.time() - start_time
         logger.info(f"Query processed in {processing_time:.2f}s")
-
+        print(result)
         return QueryResponse(
             answer=result['answer'],
             sources=result['sources'],
@@ -332,6 +332,45 @@ async def download_file(filename: str):
 
     except Exception as e:
         logger.error(f"Error downloading file: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/view-pdf/{filename}")
+async def view_pdf(filename: str):
+    """
+    View a document as PDF (replaces extension with .pdf).
+
+    Args:
+        filename: Name of the file to view
+
+    Returns:
+        PDF file response
+    """
+    try:
+        # Replace extension with .pdf
+        base_name = os.path.splitext(filename)[0]
+        pdf_filename = f"{base_name}.pdf"
+        
+        # Get raw_data directory
+        base_dir = Path(__file__).parent.parent / "raw_data"
+
+        # Search for PDF file in subdirectories
+        for root, dirs, files in os.walk(base_dir):
+            if pdf_filename in files:
+                file_path = os.path.join(root, pdf_filename)
+                logger.info(f"Serving PDF: {file_path}")
+                return FileResponse(
+                    file_path,
+                    media_type="application/pdf",
+                    headers={
+                        "Content-Disposition": f"inline; filename={pdf_filename}"
+                    }
+                )
+
+        raise HTTPException(status_code=404, detail=f"PDF not found: {pdf_filename}")
+
+    except Exception as e:
+        logger.error(f"Error viewing PDF: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

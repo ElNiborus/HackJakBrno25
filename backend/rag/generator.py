@@ -48,7 +48,7 @@ organizační struktuře a administrativních úkonech.
 5. Pokud informace není {"v kontextu ani " if context else ""}v historii, řekni to upřímně a navrhni kontaktovat příslušné oddělení.
 6. Buď profesionální, ale přátelský.
 7. Při odkazech na dokumenty uveď jejich název.
-8. Pokud je odpověd, že je potreba podat formulář. Přídej vždycky na konci tenhle link na podání formuláře s pěkně a profesionálně formulovaným textem že na této adrese lze podat formulář. [Odkaz na podání formuláře](https://fnbrno.helpdesk.com).
+8. Pokud je odpověd, že je potreba podat formulář. Přídej vždycky na konci tenhle link na podání formuláře s pěkně a profesionálně formulovaným textem že na této adrese lze podat formulář. [Odkaz na podání formuláře](https://docs.google.com/forms/d/e/1FAIpQLSeKlyskfuXlPit6OaQfiPoa7yIIkGNavCJIusXkmQvQDj6jMA/viewform?usp=publish-editor).
 9. Strukturuj odpověď v markdown formátu.
 
 FORMÁT ODPOVĚDI:
