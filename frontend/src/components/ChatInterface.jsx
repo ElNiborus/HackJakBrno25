@@ -784,7 +784,40 @@ function ChatInterface({ userRole, userId }) {
           const pageText = normalizeText(textContent.items.map(item => item.str).join(' '))
           
           // Check if this page contains the chunk (using first 50 chars)
-          const chunkStartIndex = pageText.indexOf(chunkNormalized.substring(0, 50))
+          // const chunkStartIndex = pageText.indexOf(chunkNormalized.substring(0, 10))
+          var chunkStartIndex = -1
+
+          function similarity(s1, s2) {
+            let longer = s1.length > s2.length ? s1 : s2;
+            let shorter = s1.length > s2.length ? s2 : s1;
+            let longerLen = longer.length;
+            if (longerLen === 0) return 1.0;
+            let editDist = levenshteinDistance(longer, shorter);
+            return (longerLen - editDist) / longerLen;
+          }
+
+          function levenshteinDistance(a, b) {
+            const dp = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(0));
+            for (let i = 0; i <= a.length; i++) dp[0][i] = i;
+            for (let j = 0; j <= b.length; j++) dp[j][0] = j;
+            for (let j = 1; j <= b.length; j++) {
+              for (let i = 1; i <= a.length; i++) {
+                if (a[i-1] === b[j-1]) dp[j][i] = dp[j-1][i-1];
+                else dp[j][i] = 1 + Math.min(dp[j-1][i], dp[j][i-1], dp[j-1][i-1]);
+              }
+            }
+            return dp[b.length][a.length];
+          }
+
+          const chunk = chunkNormalized.substring(0, 25);
+          for (let i = 0; i <= pageText.length - chunk.length; i+= 5) {
+            let sub = pageText.substring(i, i + chunk.length);
+            if (similarity(sub, chunk) >= 0.8) {
+              console.log("Found at index", i);
+              chunkStartIndex = i;
+              break;
+            }
+          }
           
           if (chunkStartIndex !== -1) {
             targetPage = pageNum
@@ -794,7 +827,6 @@ function ChatInterface({ userRole, userId }) {
             let currentPos = 0
             let matchStartIdx = -1
             let matchEndIdx = -1
-            
             for (let i = 0; i < textContent.items.length; i++) {
               const item = textContent.items[i]
               const itemText = normalizeText(item.str)
