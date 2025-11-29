@@ -130,7 +130,7 @@ function DocumentUploadForm({ onSubmit }) {
           type="submit"
           disabled={isSubmitted}
           style={{
-            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
@@ -140,8 +140,8 @@ function DocumentUploadForm({ onSubmit }) {
             cursor: isSubmitted ? 'default' : 'pointer',
             transition: 'background-color 0.2s'
           }}
-          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
+          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
+          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
           {isSubmitted ? '✓' : 'Odeslat'}
         </button>
@@ -402,7 +402,7 @@ function TripExpenseForm({ onSubmit, userId }) {
           type="submit"
           disabled={isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount}
           style={{
-            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
@@ -414,8 +414,8 @@ function TripExpenseForm({ onSubmit, userId }) {
             marginTop: '20px',
             opacity: (availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) && !isSubmitted ? 0.6 : 1
           }}
-          onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#007bff')}
+          onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#1a3378')}
+          onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#0B2265')}
         >
           {isSubmitted ? '✓' : 'Odeslat žádost'}
         </button>
@@ -621,7 +621,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
           type="submit"
           disabled={isSubmitted || (formData.transport === 'Firemní auto' && !hasReferentskeZkousky)}
           style={{
-            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
@@ -632,8 +632,8 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
             transition: 'background-color 0.2s',
             opacity: isSubmitted ? 1 : 1
           }}
-          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
+          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
+          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
           {isSubmitted ? '✓' : 'Odeslat'}
         </button>
