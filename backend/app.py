@@ -7,7 +7,7 @@ import time
 import os
 from pathlib import Path
 
-from models.schemas import QueryRequest, QueryResponse, ChatRequest, ChatResponse, Message
+from models.schemas import QueryRequest, QueryResponse, ChatRequest, ChatResponse, Message, IntentCategory, ActionType
 from iris_db import IRISVectorDB
 from ingestion.embedder import EmbeddingGenerator
 from rag.retriever import VectorRetriever
@@ -222,8 +222,22 @@ async def chat(request: ChatRequest):
         )
         session_manager.add_message(session_id, user_message)
 
-        # Decide whether to use RAG
-        needs_rag = rag_router.should_use_rag(request.query, history)
+        # Classify user intent
+        category = rag_router.classify_intent(request.query, history)
+
+        # Determine if RAG needed based on category
+        needs_rag = category in [
+            IntentCategory.GENERAL_RAG,
+            IntentCategory.TRIP_REQUEST,
+            IntentCategory.TRIP_EXPENSE
+        ]
+
+        # Determine action_type for frontend
+        action_type = None
+        if category == IntentCategory.TRIP_REQUEST:
+            action_type = ActionType.SHOW_TRIP_FORM
+        elif category == IntentCategory.TRIP_EXPENSE:
+            action_type = ActionType.SHOW_EXPENSE_FORM
 
         # Retrieve context if needed
         sources = []
@@ -249,11 +263,12 @@ async def chat(request: ChatRequest):
             else:
                 logger.warning("No relevant chunks found despite RAG routing")
 
-        # Generate response with history and optional context
+        # Generate response with history, optional context, and category
         answer = generator.generate_response(
             query=request.query,
             context=context,
-            history=history
+            history=history,
+            category=category
         )
 
         # Create assistant message
@@ -272,7 +287,9 @@ async def chat(request: ChatRequest):
         logger.info("CHAT RESPONSE")
         logger.info("=" * 80)
         logger.info(f"Session ID: {session_id}")
+        logger.info(f"Intent Category: {category.value}")
         logger.info(f"Used RAG: {needs_rag}")
+        logger.info(f"Action Type: {action_type.value if action_type else 'None'}")
         logger.info(f"Number of sources: {len(sources)}")
         logger.info(f"Processing time: {processing_time:.2f}s")
         logger.info(f"Assistant Response:\n{answer}")
@@ -283,7 +300,8 @@ async def chat(request: ChatRequest):
             message=assistant_message,
             used_rag=needs_rag,
             sources=sources,
-            processing_time=processing_time
+            processing_time=processing_time,
+            action_type=action_type
         )
 
     except Exception as e:

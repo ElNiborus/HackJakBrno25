@@ -2,7 +2,7 @@ from openai import OpenAI
 from typing import List, Dict, Optional
 import logging
 from config import get_settings
-from models.schemas import Message
+from models.schemas import Message, IntentCategory
 from rag.prompts import get_system_prompt, get_user_message
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,8 @@ class ResponseGenerator:
         self,
         query: str,
         context: Optional[str] = None,
-        history: Optional[List[Message]] = None
+        history: Optional[List[Message]] = None,
+        category: IntentCategory = IntentCategory.GENERAL_RAG
     ) -> str:
         """
         Generate response using retrieved context, query, and conversation history.
@@ -42,7 +43,8 @@ class ResponseGenerator:
             system_prompt = get_system_prompt(
                 has_context=has_context,
                 has_history=has_history,
-                formatted_history=formatted_history or ""
+                formatted_history=formatted_history or "",
+                category=category
             )
 
             user_message = get_user_message(
