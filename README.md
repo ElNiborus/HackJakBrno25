@@ -1,7 +1,6 @@
 # HackJakBrno25
 Hackathon
 
-<<<<<<< HEAD
 Virtual assistant for University Hospital Brno (FN Brno) - A RAG-based chatbot to help employees navigate internal processes and organizational structure.
 
 ## Project Overview
