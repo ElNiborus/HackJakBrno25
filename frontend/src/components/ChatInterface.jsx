@@ -703,18 +703,38 @@ function ChatInterface({ userRole, userId }) {
   const [currentDocName, setCurrentDocName] = useState('')
   const [currentChunkText, setCurrentChunkText] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [collapsedSources, setCollapsedSources] = useState(() => {
+    // Initialize all sources as collapsed by default
+    const initialCollapsed = {};
+    messages.forEach((msg, idx) => {
+      if (msg.sources && msg.sources.length > 0) {
+        initialCollapsed[`msg-${idx}`] = true;
+      }
+    });
+    return initialCollapsed;
+  })
   const messagesEndRef = useRef(null)
   const recognitionRef = useRef(null)
   const pdfCanvasRef = useRef(null)
   const interimTranscriptRef = useRef('')
+  const sourcesRefs = useRef({})
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const scrollToSource = (key) => {
+  requestAnimationFrame(() => {
+    const el = sourcesRefs.current[key];
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'instant', block: 'start' });
+  });
+};
+
   useEffect(() => {
+    // Only scroll to bottom when messages change, but not when just toggling sources
     scrollToBottom()
-  }, [messages])
+  }, [messages.length])
 
   useEffect(() => {
     // Initialize Speech Recognition
@@ -764,6 +784,20 @@ function ChatInterface({ userRole, userId }) {
       }
     }
   }, [])
+
+  // Handle Escape key to close PDF sidebar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && pdfSidebarOpen) {
+        closePdfSidebar()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [pdfSidebarOpen])
 
   // Load and render PDF when URL changes
   useEffect(() => {
@@ -1053,7 +1087,17 @@ function ChatInterface({ userRole, userId }) {
         timestamp: new Date()
       }
 
-      setMessages(prev => [...prev, assistantMessage])
+      setMessages(prev => {
+        const newMessages = [...prev, assistantMessage];
+        // Set new message sources as collapsed by default
+        if (assistantMessage.sources && assistantMessage.sources.length > 0) {
+          setCollapsedSources(prevCollapsed => ({
+            ...prevCollapsed,
+            [`msg-${newMessages.length - 1}`]: true
+          }));
+        }
+        return newMessages;
+      })
       console.log('[ChatInterface] Message added to state')
 
     } catch (error) {
@@ -1139,139 +1183,169 @@ function ChatInterface({ userRole, userId }) {
         <div className="messages-container">
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.type}`}>
-              {message.type === 'assistant' && (
-                <img
-                  src="/robot.png"
-                  alt="Robot Assistant"
-                  className="robot-avatar"
-                />
-              )}
-              {message.type === 'assistant' ? (
-                <div className="message-wrapper">
-                  <div className="message-content">
-                    {message.isForm ? (
-                      <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
-                    ) : message.isForm2 ? (
-                      <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
-                    ) : (
-                      <>
-                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+              <div className="message-content">
+                {message.isForm ? (
+                  <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
+                ) : message.isForm2 ? (
+                  <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
+                ) : (
+                  <>
+                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
 
-                        {message.sources && message.sources.length > 0 && (
-                          <div className="sources-section">
-                            <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
-                            {message.sources.map((source, idx) => (
-                              <div
-                                key={idx}
-                                className="source-item"
-                                onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <div className="source-name">
-                                  {source.document_name}
-                                  <span className="relevance-score">
-                                    ({(source.relevance_score * 100).toFixed(0)}% shoda)
-                                  </span>
-                                </div>
-                                {source.metadata?.department && (
-                                  <div className="source-metadata">
-                                    📍 Oddělení: {source.metadata.department}
-                                  </div>
-                                )}
-                                {source.metadata?.process_owner && (
-                                  <div className="source-metadata">
-                                    👤 Vlastník procesu: {source.metadata.process_owner}
+                    {message.sources && message.sources.length > 0 && (
+                      <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>
+                        <div 
+                          className="sources-header" 
+                          onClick={() => {
+                            const messageKey = `msg-${index}`;
+                            const isCurrentlyCollapsed = collapsedSources[messageKey];
+                            setCollapsedSources(prev => ({
+                              ...prev,
+                              [messageKey]: !prev[messageKey]
+                            }));
+                            // If expanding, scroll to show the content
+                            if (isCurrentlyCollapsed) {
+                              scrollToSource(messageKey);
+                            }
+                          }}
+                          style={{ cursor: 'pointer', userSelect: 'none' }}
+                        >
+                          <span style={{ 
+                            marginRight: '8px',
+                            display: 'inline-block',
+                            transition: 'transform 0.2s',
+                            transform: collapsedSources[`msg-${index}`] ? 'rotate(-90deg)' : 'rotate(0deg)'
+                          }}>
+                            ▼
+                          </span>
+                          📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}
+                        </div>
+                        {!collapsedSources[`msg-${index}`] && (() => {
+                          // Sort sources by document_name
+                          const sortedSources = [...message.sources].sort((a, b) => 
+                            a.document_name.localeCompare(b.document_name, 'cs')
+                          );
+                          
+                          // Group by document_name
+                          const groupedSources = {};
+                          sortedSources.forEach(source => {
+                            if (!groupedSources[source.document_name]) {
+                              groupedSources[source.document_name] = [];
+                            }
+                            groupedSources[source.document_name].push(source);
+                          });
+                          
+                          return Object.entries(groupedSources).map(([docName, sources], groupIdx) => {
+                            const isXlsx = docName.toLowerCase().endsWith('.xlsx');
+                            
+                            return (
+                              <div key={groupIdx} style={{ 
+                                display: 'flex', 
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 14px',
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '8px',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                transition: 'box-shadow 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'}
+                              onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}>
+                                <span style={{ flex: 1, fontWeight: '500', color: '#333' }}>{docName}</span>
+                                {isXlsx ? (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDocumentClick(sources[0].document_name, sources[0].chunk_text);
+                                    }}
+                                    style={{
+                                      backgroundColor: '#f0f4ff',
+                                      color: '#2563eb',
+                                      border: '1px solid #dbeafe',
+                                      borderRadius: '6px',
+                                      padding: '6px 14px',
+                                      fontSize: '13px',
+                                      fontWeight: '500',
+                                      cursor: 'pointer',
+                                      whiteSpace: 'nowrap',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#dbeafe';
+                                      e.target.style.borderColor = '#93c5fd';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = '#f0f4ff';
+                                      e.target.style.borderColor = '#dbeafe';
+                                    }}
+                                  >
+                                    {sources.length > 1 ? `Úseky 1-${sources.length}` : 'Úsek 1'}
+                                  </button>
+                                ) : (
+                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                    {sources.map((source, idx) => (
+                                      <button
+                                        key={idx}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDocumentClick(source.document_name, source.chunk_text);
+                                        }}
+                                        style={{
+                                          backgroundColor: '#f0f4ff',
+                                          color: '#2563eb',
+                                          border: '1px solid #dbeafe',
+                                          borderRadius: '6px',
+                                          padding: '6px 12px',
+                                          fontSize: '13px',
+                                          fontWeight: '500',
+                                          cursor: 'pointer',
+                                          whiteSpace: 'nowrap',
+                                          transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.target.style.backgroundColor = '#dbeafe';
+                                          e.target.style.borderColor = '#93c5fd';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.target.style.backgroundColor = '#f0f4ff';
+                                          e.target.style.borderColor = '#dbeafe';
+                                        }}
+                                      >
+                                        Úsek {idx + 1}
+                                      </button>
+                                    ))}
                                   </div>
                                 )}
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
+                            );
+                          });
+                        })()}
+                      </div>
                     )}
-                  </div>
+                  </>
+                )}
+              </div>
 
-                  <div className="message-timestamp">
-                    {formatTime(message.timestamp)}
-                    {message.processingTime && (
-                      <span className="processing-time">
-                        {' '}• {message.processingTime.toFixed(2)}s
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="message-content">
-                    {message.isForm ? (
-                      <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
-                    ) : message.isForm2 ? (
-                      <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
-                    ) : (
-                      <>
-                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
-
-                        {message.sources && message.sources.length > 0 && (
-                          <div className="sources-section">
-                            <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
-                            {message.sources.map((source, idx) => (
-                              <div
-                                key={idx}
-                                className="source-item"
-                                onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <div className="source-name">
-                                  {source.document_name}
-                                  <span className="relevance-score">
-                                    ({(source.relevance_score * 100).toFixed(0)}% shoda)
-                                  </span>
-                                </div>
-                                {source.metadata?.department && (
-                                  <div className="source-metadata">
-                                    📍 Oddělení: {source.metadata.department}
-                                  </div>
-                                )}
-                                {source.metadata?.process_owner && (
-                                  <div className="source-metadata">
-                                    👤 Vlastník procesu: {source.metadata.process_owner}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  <div className="message-timestamp">
-                    {formatTime(message.timestamp)}
-                    {message.processingTime && (
-                      <span className="processing-time">
-                        {' '}• {message.processingTime.toFixed(2)}s
-                      </span>
-                    )}
-                  </div>
-                </>
-              )}
+              <div className="message-timestamp">
+                {formatTime(message.timestamp)}
+                {message.processingTime && (
+                  <span className="processing-time">
+                    {' '}• {message.processingTime.toFixed(2)}s
+                  </span>
+                )}
+              </div>
             </div>
           ))}
 
           {isLoading && (
             <div className="message assistant">
-              <img
-                src="/Resources/robot.png"
-                alt="Robot Assistant"
-                className="robot-avatar"
-              />
-              <div className="message-wrapper">
-                <div className="message-content">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
+              <div className="message-content">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
                 </div>
               </div>
             </div>
