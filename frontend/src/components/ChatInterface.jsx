@@ -59,7 +59,7 @@ function DocumentUploadForm({ onSubmit }) {
   }
 
   return (
-    <div style={{
+    <div className="form-container" style={{
       backgroundColor: '#f8f9fa',
       padding: '20px',
       borderRadius: '8px',
@@ -93,7 +93,9 @@ function DocumentUploadForm({ onSubmit }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -121,7 +123,9 @@ function DocumentUploadForm({ onSubmit }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -129,6 +133,7 @@ function DocumentUploadForm({ onSubmit }) {
         <button
           type="submit"
           disabled={isSubmitted}
+          className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
           style={{
             backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
@@ -137,13 +142,17 @@ function DocumentUploadForm({ onSubmit }) {
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: isSubmitted ? 'default' : 'pointer',
-            transition: 'background-color 0.2s'
+            cursor: isSubmitted ? 'default' : 'pointer'
           }}
           onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
           onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
-          {isSubmitted ? '✓' : 'Odeslat'}
+          <div className={`button-content ${isSubmitted ? 'hide' : ''}`}>
+            Odeslat
+          </div>
+          <div className={`checkmark ${isSubmitted ? 'show' : ''}`}>
+            ✓
+          </div>
         </button>
       </form>
     </div>
@@ -153,8 +162,12 @@ function DocumentUploadForm({ onSubmit }) {
 // Receipt Upload Component for FORM2 (inline component)
 function ReceiptUploadSection({ receipts, onReceiptChange, isSubmitted }) {
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files)
-    onReceiptChange(files)
+    const newFiles = Array.from(e.target.files)
+    // Append new files to existing receipts instead of replacing
+    const updatedFiles = [...receipts, ...newFiles]
+    onReceiptChange(updatedFiles)
+    // Clear the input value to allow selecting the same file again if needed
+    e.target.value = ''
   }
 
   const removeFile = (index) => {
@@ -249,7 +262,13 @@ function TripExpenseForm({ onSubmit, userId }) {
   // Load available work trips from localStorage
   useEffect(() => {
     const trips = getWorkTrips(userId)
-    setAvailableTrips(trips)
+    // Sort trips by start date (most recent first)
+    const sortedTrips = trips.sort((a, b) => {
+      const dateA = new Date(a.dateFrom)
+      const dateB = new Date(b.dateFrom)
+      return dateB - dateA // Most recent first
+    })
+    setAvailableTrips(sortedTrips)
   }, [userId])
 
   const handleChange = (e) => {
@@ -292,7 +311,7 @@ function TripExpenseForm({ onSubmit, userId }) {
   }
 
   return (
-    <div style={{
+    <div className="form-container" style={{
       backgroundColor: '#f8f9fa',
       padding: '20px',
       borderRadius: '8px',
@@ -359,8 +378,8 @@ function TripExpenseForm({ onSubmit, userId }) {
               required
               disabled={isSubmitted}
               min="0"
-              step="0.01"
-              placeholder="0.00"
+              step="1"
+              placeholder="0"
               style={{
                 width: '100%',
                 padding: '8px 12px',
@@ -369,12 +388,12 @@ function TripExpenseForm({ onSubmit, userId }) {
                 fontSize: '14px',
                 backgroundColor: isSubmitted ? '#e9ecef' : 'white',
                 cursor: isSubmitted ? 'not-allowed' : 'text',
-                paddingRight: '35px'
+                paddingRight: '50px'
               }}
             />
             <span style={{
               position: 'absolute',
-              right: '12px',
+              right: '35px',
               fontSize: '14px',
               color: '#666',
               pointerEvents: 'none'
@@ -393,6 +412,7 @@ function TripExpenseForm({ onSubmit, userId }) {
         <button
           type="submit"
           disabled={isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount}
+          className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
           style={{
             backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
@@ -402,14 +422,18 @@ function TripExpenseForm({ onSubmit, userId }) {
             fontSize: '14px',
             fontWeight: '500',
             cursor: (isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s',
             marginTop: '20px',
             opacity: (availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) && !isSubmitted ? 0.6 : 1
           }}
           onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#1a3378')}
           onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#0B2265')}
         >
-          {isSubmitted ? '✓' : 'Odeslat žádost'}
+          <div className={`button-content ${isSubmitted ? 'hide' : ''}`}>
+            Odeslat žádost
+          </div>
+          <div className={`checkmark ${isSubmitted ? 'show' : ''}`}>
+            ✓
+          </div>
         </button>
       </form>
     </div>
@@ -455,7 +479,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
   }
 
   return (
-    <div style={{
+    <div className="form-container" style={{
       backgroundColor: '#f8f9fa',
       padding: '20px',
       borderRadius: '8px',
@@ -517,7 +541,9 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -545,7 +571,9 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
               border: '1px solid #ced4da',
               fontSize: '14px',
               backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+              cursor: isSubmitted ? 'not-allowed' : 'pointer',
+              boxSizing: 'border-box',
+              maxWidth: '100%'
             }}
           />
         </div>
@@ -604,6 +632,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
         <button
           type="submit"
           disabled={isSubmitted || (formData.transport === 'Firemní auto' && !hasReferentskeZkousky)}
+          className={`submit-button ${isSubmitted ? 'submitted' : ''}`}
           style={{
             backgroundColor: isSubmitted ? '#0B2265' : '#0B2265',
             color: 'white',
@@ -612,18 +641,25 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: isSubmitted ? 'default' : 'pointer',
-            transition: 'background-color 0.2s',
-            opacity: isSubmitted ? 1 : 1
+            cursor: isSubmitted ? 'default' : 'pointer'
           }}
           onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#1a3378')}
           onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0B2265')}
         >
-          {isSubmitted ? '✓' : 'Odeslat'}
+          <div className={`button-content ${isSubmitted ? 'hide' : ''}`}>
+            Odeslat
+          </div>
+          <div className={`checkmark ${isSubmitted ? 'show' : ''}`}>
+            ✓
+          </div>
         </button>
       </form>
 
-      {showDocumentUpload && <DocumentUploadForm onSubmit={handleDocumentSubmit} />}
+      {showDocumentUpload && (
+        <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <DocumentUploadForm onSubmit={handleDocumentSubmit} />
+        </div>
+      )}
     </div>
   )
 }
@@ -922,28 +958,33 @@ function ChatInterface({ userRole, userId }) {
     let messageText = `Děkuji za vyplnění formuláře!\n\nVaše údaje:\n- Destinace: ${formData.destination}\n- Od: ${formData.dateFrom}\n- Do: ${formData.dateTo}\n- Dopravní prostředek: ${formData.transport}`
 
     if (savedTrip) {
-      messageText += `\n\nPracovní cesta byla uložena do systému pro pozdější vyúčtování.`
+      messageText += `\n\nPracovní cesta byla uložena do systému pro schválení nadřízeným.`
     }
 
     // Only show thank you if not Osobní auto (document upload will be shown)
     if (formData.transport !== 'Osobní auto') {
-      const thankYouMessage = {
-        type: 'assistant',
-        text: messageText,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, thankYouMessage])
+      // Add 0.5s delay before showing the response message
+      setTimeout(() => {
+        const thankYouMessage = {
+          type: 'assistant',
+          text: messageText,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, thankYouMessage])
+      }, 500)
     }
   }
 
   const handleDocumentUpload = (files) => {
-    // Handle document upload - thank the user
-    const thankYouMessage = {
-      type: 'assistant',
-      text: `Děkuji za nahrání dokumentů!\n\nNahrané soubory:\n- Pojištění vozidla: ${files.insurance?.name || 'Nenahrán'}\n- Řidičský průkaz: ${files.license?.name || 'Nenahrán'}\n\nVaše žádost o pracovní cestu byla úspěšně odeslána.`,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, thankYouMessage])
+    // Add 0.5s delay before showing the response message
+    setTimeout(() => {
+      const thankYouMessage = {
+        type: 'assistant',
+        text: `Děkuji za nahrání dokumentů!\n\nNahrané soubory:\n- Pojištění vozidla: ${files.insurance?.name || 'Nenahrán'}\n- Řidičský průkaz: ${files.license?.name || 'Nenahrán'}\n\nVaše žádost o pracovní cestu byla úspěšně odeslána.`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, thankYouMessage])
+    }, 500)
   }
 
   const handleForm2Submit = (formData) => {
@@ -978,12 +1019,15 @@ function ChatInterface({ userRole, userId }) {
       ? `\n\nVybraná pracovní cesta:\n- Destinace: ${selectedTrip.destination}\n- Od: ${formatDate(selectedTrip.dateFrom)}\n- Do: ${formatDate(selectedTrip.dateTo)}\n- Dopravní prostředek: ${selectedTrip.transport}`
       : '\n\nChyba: Nebyla vybrána žádná pracovní cesta.'
 
-    const thankYouMessage = {
-      type: 'assistant',
-      text: `Děkuji za vyplnění formuláře pro vyúčtování pracovní cesty!${tripDetails}\n\nCelková částka výdajů: ${formatCurrency(formData.totalAmount)}\nPočet nahraných účtenek: ${formData.receipts.length}\n\nNahrané soubory:\n${receiptsList}\n\nVaše žádost o vyúčtování byla úspěšně odeslána ke schválení.`,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, thankYouMessage])
+    // Add 0.5s delay before showing the response message
+    setTimeout(() => {
+      const thankYouMessage = {
+        type: 'assistant',
+        text: `Děkuji za vyplnění formuláře pro vyúčtování pracovní cesty!${tripDetails}\n\nCelková částka výdajů: ${formatCurrency(formData.totalAmount)}\nPočet nahraných účtenek: ${formData.receipts.length}\n\nNahrané soubory:\n${receiptsList}\n\nVaše žádost o vyúčtování byla úspěšně odeslána ke schválení.`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, thankYouMessage])
+    }, 500)
   }
 
   const handleSubmit = async (e) => {
