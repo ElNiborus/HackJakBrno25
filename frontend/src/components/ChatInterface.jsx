@@ -157,8 +157,12 @@ function DocumentUploadForm({ onSubmit }) {
 // Receipt Upload Component for FORM2 (inline component)
 function ReceiptUploadSection({ receipts, onReceiptChange, isSubmitted }) {
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files)
-    onReceiptChange(files)
+    const newFiles = Array.from(e.target.files)
+    // Append new files to existing receipts instead of replacing
+    const updatedFiles = [...receipts, ...newFiles]
+    onReceiptChange(updatedFiles)
+    // Clear the input value to allow selecting the same file again if needed
+    e.target.value = ''
   }
 
   const removeFile = (index) => {
