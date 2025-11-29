@@ -237,7 +237,7 @@ async def chat(request: ChatRequest):
                 sources = [
                     {
                         'document_name': chunk['document_name'],
-                        'chunk_text': chunk['chunk_text'][:200] + '...' if len(chunk['chunk_text']) > 200 else chunk['chunk_text'],
+                        'chunk_text': chunk['chunk_text'],
                         'relevance_score': chunk['relevance_score'],
                         'metadata': {
                             'department': chunk.get('department'),

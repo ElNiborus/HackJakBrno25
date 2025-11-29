@@ -47,7 +47,7 @@ def ingest_documents(raw_data_path: str):
 
     # Initialize components
     db = IRISVectorDB()
-    chunk_size=5000
+    chunk_size=700
     chunker = TextChunker(chunk_size=chunk_size, overlap=100)
     logger.info(f"Chunking with chink size {chunk_size}")
     embedder = EmbeddingGenerator()
