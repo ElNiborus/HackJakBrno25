@@ -3,6 +3,7 @@ from typing import List, Dict, Optional
 import logging
 from config import get_settings
 from models.schemas import Message
+from rag.prompts import get_system_prompt, get_user_message
 
 logger = logging.getLogger(__name__)
 
@@ -34,47 +35,30 @@ class ResponseGenerator:
         try:
             # Format conversation history
             formatted_history = self._format_history(history) if history else None
+            has_history = bool(formatted_history)
+            has_context = bool(context)
 
-            # System prompt for FN Brno assistant
-            history_section = f"HISTORIE KONVERZACE:\n{formatted_history}\n\n" if formatted_history else ""
+            # Generate prompts using the prompts module
+            system_prompt = get_system_prompt(
+                has_context=has_context,
+                has_history=has_history,
+                formatted_history=formatted_history or ""
+            )
 
-            system_prompt = f"""Jsi virtuální asistent pro Fakultní nemocnici Brno (FN Brno).
-Tvým úkolem je pomáhat zaměstnancům nemocnice s navigací v interních procesech,
-organizační struktuře a administrativních úkonech.
+            user_message = get_user_message(
+                query=query,
+                context=context,
+                has_history=has_history
+            )
 
-{history_section}PRAVIDLA:
-1. Odpovídej {"na základě poskytnutého kontextu z dokumentů a historie konverzace" if context else "na základě historie konverzace"}.
-2. Odpovídej jasně, stručně a v češtině.
-3. Pokud je to možné, uveď konkrétní oddělení nebo osobu zodpovědnou za daný proces.
-4. Poskytuj krok za krokem návod, když se ptají na postupy.
-5. Pokud informace není {"v kontextu ani " if context else ""}v historii, řekni to upřímně a navrhni kontaktovat příslušné oddělení.
-6. Buď profesionální, ale přátelský.
-7. Při odkazech na dokumenty uveď jejich název.
-8. Pokud je odpověd, že je potreba podat formulář. Přídej vždycky na konci tenhle link na podání formuláře s pěkně a profesionálně formulovaným textem že na této adrese lze podat formulář. [Odkaz na podání formuláře](https://docs.google.com/forms/d/e/1FAIpQLSeKlyskfuXlPit6OaQfiPoa7yIIkGNavCJIusXkmQvQDj6jMA/viewform?usp=publish-editor).
-9. Strukturuj odpověď v markdown formátu.
-
-FORMÁT ODPOVĚDI:
-- Začni přímou odpovědí na otázku
-- Pokud je to relevantní, uveď zodpovědné oddělení nebo osobu
-- Poskytni konkrétní kroky, pokud se ptají na postup
-- Na konci můžeš uvést zdroj informace (název dokumentu)"""
-
-            # Create user message with optional context
-            if context:
-                user_message = f"""KONTEXT Z DOKUMENTŮ:
-{context}
-
-OTÁZKA ZAMĚSTNANCE:
-{query}
-
-Odpověz na otázku zaměstnance na základě výše uvedeného kontextu{" a historie konverzace" if formatted_history else ""}."""
-            else:
-                user_message = f"""OTÁZKA ZAMĚSTNANCE:
-{query}
-
-Odpověz na otázku zaměstnance{"na základě historie konverzace" if formatted_history else ""}."""
-
-            logger.info("Generating response with OpenAI")
+            # Log the prompts being sent
+            logger.info("=" * 80)
+            logger.info("GENERATING RESPONSE")
+            logger.info("=" * 80)
+            logger.info(f"System Prompt:\n{system_prompt}")
+            logger.info("-" * 80)
+            logger.info(f"User Message:\n{user_message}")
+            logger.info("-" * 80)
 
             # Call OpenAI API
             # For reasoning models (gpt-5-mini), use the new responses API
@@ -88,13 +72,14 @@ Odpověz na otázku zaměstnance{"na základě historie konverzace" if formatted
                 reasoning={"effort": "minimal"}
             )
 
-            logger.info(f"OpenAI response: {response}")
-
             # Extract answer from the new response structure
             # The Responses API returns output_text directly
             answer = response.output_text
-            logger.info(f"Response generated successfully. Answer length: {len(answer) if answer else 0}")
-            logger.info(f"Answer content: {answer[:200] if answer else 'EMPTY/NULL'}")
+
+            # Log the response
+            logger.info(f"Generated Response:\n{answer}")
+            logger.info("=" * 80)
+
             return answer
 
         except Exception as e:
