@@ -50,7 +50,7 @@
 
 .message-content {
   max-width: 70%;
-  padding: 0.5rem 0.6rem;
+  padding: 0.5rem 0.8rem;
   border-radius: 12px;
   position: relative;
 }
@@ -250,8 +250,9 @@
 }
 
 .chat-input:focus {
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-color: #13456d;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  outline: none !important;
 }
 
 .chat-input:disabled {
