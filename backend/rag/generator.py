@@ -63,8 +63,7 @@ Odpověz na otázku zaměstnance na základě výše uvedeného kontextu."""
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                # Note: gpt-5-mini only supports default temperature (1)
-                max_completion_tokens=1000  # gpt-5-mini uses max_completion_tokens
+                max_completion_tokens=1000
             )
 
             logger.info(f"OpenAI response: {response}")
