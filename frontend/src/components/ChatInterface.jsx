@@ -42,7 +42,7 @@ function TravelForm({ onSubmit }) {
             fontWeight: '500',
             color: '#555'
           }}>
-            Kam jedu:
+            Destinace:
           </label>
           <input
             type="text"
@@ -94,7 +94,7 @@ function TravelForm({ onSubmit }) {
             fontWeight: '500',
             color: '#555'
           }}>
-            Jak:
+            Dopravní prostředek:
           </label>
           <input
             type="text"
