@@ -57,19 +57,22 @@ Odpověz na otázku zaměstnance na základě výše uvedeného kontextu."""
             logger.info("Generating response with OpenAI")
 
             # Call OpenAI API
-            response = self.client.chat.completions.create(
+            # For reasoning models (gpt-5-mini), use the new responses API
+            response = self.client.responses.create(
                 model=self.settings.openai_model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
+                instructions=system_prompt,
+                input=[
                     {"role": "user", "content": user_message}
                 ],
-                max_completion_tokens=1000
+                max_output_tokens=1000,
+                reasoning={"effort": "minimal"}
             )
 
             logger.info(f"OpenAI response: {response}")
-            logger.info(f"Response choices: {response.choices}")
-            logger.info(f"Message: {response.choices[0].message}")
-            answer = response.choices[0].message.content
+
+            # Extract answer from the new response structure
+            # The Responses API returns output_text directly
+            answer = response.output_text
             logger.info(f"Response generated successfully. Answer length: {len(answer) if answer else 0}")
             logger.info(f"Answer content: {answer[:200] if answer else 'EMPTY/NULL'}")
             return answer
