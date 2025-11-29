@@ -4,13 +4,129 @@ import './ChatInterface.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+// Document Upload Form Component
+function DocumentUploadForm({ onSubmit }) {
+  const [files, setFiles] = useState({
+    insurance: null,
+    license: null
+  })
+  const [isSubmitted, setIsSubmitted] = useState(false)
+
+  const handleFileChange = (e) => {
+    setFiles({
+      ...files,
+      [e.target.name]: e.target.files[0]
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setIsSubmitted(true)
+    onSubmit(files)
+  }
+
+  return (
+    <div style={{
+      backgroundColor: '#f8f9fa',
+      padding: '20px',
+      borderRadius: '8px',
+      border: '1px solid #dee2e6',
+      marginTop: '15px'
+    }}>
+      <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#333' }}>
+        Nahrání dokumentů pro osobní auto
+      </h3>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Pojištění vozidla:
+          </label>
+          <input
+            type="file"
+            name="insurance"
+            onChange={handleFileChange}
+            required
+            disabled={isSubmitted}
+            accept=".pdf,.jpg,.jpeg,.png"
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ced4da',
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Řidičský průkaz:
+          </label>
+          <input
+            type="file"
+            name="license"
+            onChange={handleFileChange}
+            required
+            disabled={isSubmitted}
+            accept=".pdf,.jpg,.jpeg,.png"
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ced4da',
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+            }}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitted}
+          style={{
+            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: isSubmitted ? 'default' : 'pointer',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0056b3')}
+          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
+        >
+          {isSubmitted ? '✓' : 'Odeslat'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
 // Travel Form Component
-function TravelForm({ onSubmit }) {
+function TravelForm({ onSubmit, onDocumentUpload }) {
   const [formData, setFormData] = useState({
     destination: '',
-    duration: '',
+    dateFrom: '',
+    dateTo: '',
     transport: ''
   })
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -21,7 +137,18 @@ function TravelForm({ onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setIsSubmitted(true)
+
+    // Check if Osobní auto is selected
+    if (formData.transport === 'Osobní auto') {
+      setShowDocumentUpload(true)
+    }
+
     onSubmit(formData)
+  }
+
+  const handleDocumentSubmit = (files) => {
+    onDocumentUpload(files)
   }
 
   return (
@@ -42,7 +169,7 @@ function TravelForm({ onSubmit }) {
             fontWeight: '500',
             color: '#555'
           }}>
-            Kam jedu:
+            Destinace:
           </label>
           <input
             type="text"
@@ -50,12 +177,15 @@ function TravelForm({ onSubmit }) {
             value={formData.destination}
             onChange={handleChange}
             required
+            disabled={isSubmitted}
             style={{
               width: '100%',
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'text'
             }}
             placeholder="Například: Praha, Brno, ..."
           />
@@ -68,22 +198,52 @@ function TravelForm({ onSubmit }) {
             fontWeight: '500',
             color: '#555'
           }}>
-            Na jak dlouho:
+            Od:
           </label>
           <input
-            type="text"
-            name="duration"
-            value={formData.duration}
+            type="date"
+            name="dateFrom"
+            value={formData.dateFrom}
             onChange={handleChange}
             required
+            disabled={isSubmitted}
             style={{
               width: '100%',
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
             }}
-            placeholder="Například: 2 dny, 1 týden, ..."
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Do:
+          </label>
+          <input
+            type="date"
+            name="dateTo"
+            value={formData.dateTo}
+            onChange={handleChange}
+            required
+            disabled={isSubmitted}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ced4da',
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
+            }}
           />
         </div>
 
@@ -94,44 +254,54 @@ function TravelForm({ onSubmit }) {
             fontWeight: '500',
             color: '#555'
           }}>
-            Jak:
+            Dopravní prostředek:
           </label>
-          <input
-            type="text"
+          <select
             name="transport"
             value={formData.transport}
             onChange={handleChange}
             required
+            disabled={isSubmitted}
             style={{
               width: '100%',
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
             }}
-            placeholder="Například: autem, vlakem, letadlem, ..."
-          />
+          >
+            <option value="">Vyberte dopravní prostředek...</option>
+            <option value="Veřejná doprava">Veřejná doprava</option>
+            <option value="Osobní auto">Osobní auto</option>
+            <option value="Firemní auto">Firemní auto</option>
+          </select>
         </div>
 
         <button
           type="submit"
+          disabled={isSubmitted}
           style={{
-            backgroundColor: '#007bff',
+            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'background-color 0.2s'
+            cursor: isSubmitted ? 'default' : 'pointer',
+            transition: 'background-color 0.2s',
+            opacity: isSubmitted ? 1 : 1
           }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0056b3')}
+          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
         >
-          Odeslat
+          {isSubmitted ? '✓' : 'Odeslat'}
         </button>
       </form>
+
+      {showDocumentUpload && <DocumentUploadForm onSubmit={handleDocumentSubmit} />}
     </div>
   )
 }
@@ -351,9 +521,24 @@ function ChatInterface({ userRole, userId }) {
 
   const handleFormSubmit = (formData) => {
     // Handle form submission - just thank the user
+    let messageText = `Děkuji za vyplnění formuláře!\n\nVaše údaje:\n- Destinace: ${formData.destination}\n- Od: ${formData.dateFrom}\n- Do: ${formData.dateTo}\n- Dopravní prostředek: ${formData.transport}`
+
+    // Only show thank you if not Osobní auto (document upload will be shown)
+    if (formData.transport !== 'Osobní auto') {
+      const thankYouMessage = {
+        type: 'assistant',
+        text: messageText,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, thankYouMessage])
+    }
+  }
+
+  const handleDocumentUpload = (files) => {
+    // Handle document upload - thank the user
     const thankYouMessage = {
       type: 'assistant',
-      text: `Děkuji za vyplnění formuláře!\n\n**Vaše údaje:**\n- **Kam jedu:** ${formData.destination}\n- **Na jak dlouho:** ${formData.duration}\n- **Jak:** ${formData.transport}`,
+      text: `Děkuji za nahrání dokumentů!\n\nNahrané soubory:\n- Pojištění vozidla: ${files.insurance?.name || 'Nenahrán'}\n- Řidičský průkaz: ${files.license?.name || 'Nenahrán'}\n\nVaše žádost o pracovní cestu byla úspěšně odeslána.`,
       timestamp: new Date()
     }
     setMessages(prev => [...prev, thankYouMessage])
@@ -500,7 +685,7 @@ function ChatInterface({ userRole, userId }) {
             <div key={index} className={`message ${message.type}`}>
               <div className="message-content">
                 {message.isForm ? (
-                  <TravelForm onSubmit={handleFormSubmit} />
+                  <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} />
                 ) : (
                   <>
                     <div className="message-text">{renderTextWithLinks(message.text)}</div>
