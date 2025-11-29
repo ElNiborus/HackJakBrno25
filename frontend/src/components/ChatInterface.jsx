@@ -15,6 +15,7 @@ function ChatInterface() {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [keywordResults, setKeywordResults] = useState([])
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -37,19 +38,19 @@ function ChatInterface() {
     }
 
     setMessages(prev => [...prev, userMessage])
+    const query = inputValue
     setInputValue('')
     setIsLoading(true)
 
     try {
-      const response = await axios.post(`${API_URL}/query`, {
-        query: inputValue
-      })
+      // Run semantic search (RAG)
+      const ragResponse = await axios.post(`${API_URL}/query`, { query })
 
       const assistantMessage = {
         type: 'assistant',
-        text: response.data.answer,
-        sources: response.data.sources,
-        processingTime: response.data.processing_time,
+        text: ragResponse.data.answer,
+        sources: ragResponse.data.sources,
+        processingTime: ragResponse.data.processing_time,
         timestamp: new Date()
       }
 
@@ -69,6 +70,11 @@ function ChatInterface() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleDocumentClick = (documentName) => {
+    // Download/open the document
+    window.open(`${API_URL}/download/${documentName}`, '_blank')
   }
 
   const formatTime = (date) => {
@@ -97,12 +103,43 @@ function ChatInterface() {
             >
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
 
+<<<<<<< HEAD
               {/* Sources Section */}
               {message.sources && message.sources.length > 0 && message.type === 'assistant' && (
                 <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
                   <div className="flex items-center gap-1 text-xs font-medium opacity-80">
                     <FileText className="h-3 w-3" />
                     <span>Zdroje informací</span>
+=======
+                {message.sources && message.sources.length > 0 && (
+                  <div className="sources-section">
+                    <div className="sources-header">📚 Zdroje informací:</div>
+                    {message.sources.map((source, idx) => (
+                      <div
+                        key={idx}
+                        className="source-item"
+                        onClick={() => handleDocumentClick(source.document_name)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className="source-name">
+                          {source.document_name}
+                          <span className="relevance-score">
+                            ({(source.relevance_score * 100).toFixed(0)}% shoda)
+                          </span>
+                        </div>
+                        {source.metadata?.department && (
+                          <div className="source-metadata">
+                            📍 Oddělení: {source.metadata.department}
+                          </div>
+                        )}
+                        {source.metadata?.process_owner && (
+                          <div className="source-metadata">
+                            👤 Vlastník procesu: {source.metadata.process_owner}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+>>>>>>> 6e84450 (Clicklable links)
                   </div>
                   {message.sources.map((source, idx) => (
                     <div key={idx} className="text-xs space-y-1 bg-background/50 rounded-lg p-2">
@@ -173,6 +210,36 @@ function ChatInterface() {
             <Send className="h-4 w-4" />
           </button>
         </form>
+<<<<<<< HEAD
+=======
+
+        <div className="example-queries">
+          <p className="example-title">💡 Příklady otázek:</p>
+          <div className="example-buttons">
+            <button
+              onClick={() => setInputValue('Co mám dělat, když si chci koupit nový mobil?')}
+              className="example-button"
+              disabled={isLoading}
+            >
+              Nákup mobilu
+            </button>
+            <button
+              onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
+              className="example-button"
+              disabled={isLoading}
+            >
+              Pracovní cesta
+            </button>
+            <button
+              onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
+              className="example-button"
+              disabled={isLoading}
+            >
+              Procesy CI
+            </button>
+          </div>
+        </div>
+>>>>>>> 6e84450 (Clicklable links)
       </div>
     </div>
   )
