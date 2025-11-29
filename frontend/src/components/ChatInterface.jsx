@@ -4,6 +4,47 @@ import './ChatInterface.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+// Convert markdown links to clickable links while preserving formatting
+function renderTextWithLinks(text) {
+  if (!text) return text
+
+  // Regex to match markdown links: [text](url)
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+  const parts = []
+  let lastIndex = 0
+  let match
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index))
+    }
+
+    // Add the link
+    const linkText = match[1]
+    const url = match[2]
+    parts.push(
+      <a
+        key={match.index}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {linkText}
+      </a>
+    )
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text after last link
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : text
+}
+
 function ChatInterface() {
   const [messages, setMessages] = useState([
     {
@@ -103,7 +144,7 @@ function ChatInterface() {
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.type}`}>
               <div className="message-content">
-                <div className="message-text">{message.text}</div>
+                <div className="message-text">{renderTextWithLinks(message.text)}</div>
 
                 {message.sources && message.sources.length > 0 && (
                   <div className="sources-section">
