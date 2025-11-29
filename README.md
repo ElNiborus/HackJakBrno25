@@ -102,7 +102,7 @@ Uses Pydantic Settings for type-safe configuration management:
 
 **Configuration Groups:**
 - **IRIS Database**: Connection parameters (host, port, namespace, credentials)
-- **Embedding Model**: Model name and dimension (paraphrase-multilingual-MiniLM-L12-v2, 384D)
+- **Embedding Model**: Model name and dimension (text-embedding-3-large, 384D)
 - **OpenAI**: API key and model name (eg gpt-5-mini)
 - **RAG Parameters**: Top K results (5), minimum relevance score (0.0)
 
@@ -139,7 +139,7 @@ Uses Pydantic Settings for type-safe configuration management:
 
 - `EmbeddingGenerator`:
   - Uses SentenceTransformer library
-  - Model: `paraphrase-multilingual-MiniLM-L12-v2`
+  - Model: `text-embedding-3-large`
   - Supports Czech, English, and 50+ languages
   - Generates 384-dimensional dense vectors
   - Batch processing for efficiency
@@ -327,7 +327,7 @@ User sees answer + sources
 - Czech is primary language
 - Some documents may contain English terms
 - Better semantic understanding of mixed content
-- Paraphrase-MiniLM trained on 50+ languages
+- text-embedding-3-large
 
 **Why OpenAI?**
 - High-quality language models with strong reasoning capabilities
