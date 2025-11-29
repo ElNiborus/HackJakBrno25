@@ -934,7 +934,7 @@ function ChatInterface({ userRole, userId }) {
     let messageText = `Děkuji za vyplnění formuláře!\n\nVaše údaje:\n- Destinace: ${formData.destination}\n- Od: ${formData.dateFrom}\n- Do: ${formData.dateTo}\n- Dopravní prostředek: ${formData.transport}`
 
     if (savedTrip) {
-      messageText += `\n\nPracovní cesta byla uložena do systému pro pozdější vyúčtování.`
+      messageText += `\n\nPracovní cesta byla uložena do systému pro schválení nadřízeným.`
     }
 
     // Only show thank you if not Osobní auto (document upload will be shown)
