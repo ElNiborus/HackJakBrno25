@@ -45,7 +45,7 @@ function renderTextWithLinks(text) {
   return parts.length > 0 ? parts : text
 }
 
-function ChatInterface() {
+function ChatInterface({ userRole }) {
   const [messages, setMessages] = useState([
     {
       type: 'assistant',
@@ -83,13 +83,14 @@ function ChatInterface() {
     setIsLoading(true)
 
     console.log('[ChatInterface] Sending query:', query)
+    console.log('[ChatInterface] User role:', userRole)
     console.log('[ChatInterface] API URL:', API_URL)
     const startTime = Date.now()
 
     try {
       // Run semantic search (RAG)
       console.log('[ChatInterface] Making POST request to /query...')
-      const ragResponse = await axios.post(`${API_URL}/query`, { query })
+      const ragResponse = await axios.post(`${API_URL}/query`, { query, role: userRole })
       const elapsed = Date.now() - startTime
       console.log(`[ChatInterface] Response received in ${elapsed}ms:`, ragResponse.data)
 
