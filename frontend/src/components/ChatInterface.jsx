@@ -773,8 +773,8 @@ function ChatInterface({ userRole, userId }) {
         let targetPage = 1
         let highlightRects = []
         
-        // Normalize text for searching
-        const normalizeText = (text) => text.toLowerCase().replace(/\s+/g, ' ').trim()
+        // Normalize text for searching - keep only alphanumeric characters (including Czech)
+        const normalizeText = (text) => text.toLowerCase().replace(/[^a-záčďéěíňóřšťúůýž0-9]/g, '')
         const chunkNormalized = normalizeText(currentChunkText)
         
         // Find the page containing the chunk
@@ -812,8 +812,9 @@ function ChatInterface({ userRole, userId }) {
           const chunk = chunkNormalized.substring(0, 25);
           for (let i = 0; i <= pageText.length - chunk.length; i+= 5) {
             let sub = pageText.substring(i, i + chunk.length);
-            if (similarity(sub, chunk) >= 0.8) {
+            if (similarity(sub, chunk) >= 0.7) {
               console.log("Found at index", i);
+              console.log("Compared strings:", sub, "AND", chunk);
               chunkStartIndex = i;
               break;
             }
@@ -848,8 +849,12 @@ function ChatInterface({ userRole, userId }) {
             
             // Collect all items in the range
             if (matchStartIdx !== -1) {
+              if (matchEndIdx !== -1) {
+                matchStartIdx -= 24
+                matchEndIdx += 24
+              }
               for (let i = matchStartIdx; i <= (matchEndIdx !== -1 ? matchEndIdx : textContent.items.length - 1); i++) {
-                if (textContent.items[i].str.trim()) {
+                if (textContent && textContent.items && textContent.items[i] && textContent.items[i].str.trim()) {
                   highlightRects.push(textContent.items[i])
                 }
               }
@@ -1076,14 +1081,24 @@ function ChatInterface({ userRole, userId }) {
   }
 
   const handleDocumentClick = (documentName, chunkText) => {
-    // Open PDF in sidebar
-    const pdfName = documentName.replace(/\.[^/.]+$/, ".pdf");
-    const pdfUrl = `${API_URL}/view-pdf/${pdfName}`;
-    console.log('[ChatInterface] Opening PDF:', pdfUrl)
-    setCurrentPdfUrl(pdfUrl)
-    setCurrentDocName(documentName)
-    setCurrentChunkText(chunkText)
-    setPdfSidebarOpen(true)
+    // Get file extension
+    const extension = documentName.split('.').pop().toLowerCase();
+    
+    if (extension === 'xlsx') {
+      // For Excel files, trigger download
+      const downloadUrl = `${API_URL}/download/${documentName}`;
+      console.log('[ChatInterface] Downloading file:', downloadUrl)
+      window.open(downloadUrl, '_blank');
+    } else {
+      // For docx and other files, open PDF in sidebar
+      const pdfName = documentName.replace(/\.[^/.]+$/, ".pdf");
+      const pdfUrl = `${API_URL}/view-pdf/${pdfName}`;
+      console.log('[ChatInterface] Opening PDF:', pdfUrl)
+      setCurrentPdfUrl(pdfUrl)
+      setCurrentDocName(documentName)
+      setCurrentChunkText(chunkText)
+      setPdfSidebarOpen(true)
+    }
   }
 
   const closePdfSidebar = () => {
