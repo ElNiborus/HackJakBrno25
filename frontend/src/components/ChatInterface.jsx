@@ -1139,67 +1139,139 @@ function ChatInterface({ userRole, userId }) {
         <div className="messages-container">
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.type}`}>
-              <div className="message-content">
-                {message.isForm ? (
-                  <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
-                ) : message.isForm2 ? (
-                  <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
-                ) : (
-                  <>
-                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
+              {message.type === 'assistant' && (
+                <img
+                  src="/robot.png"
+                  alt="Robot Assistant"
+                  className="robot-avatar"
+                />
+              )}
+              {message.type === 'assistant' ? (
+                <div className="message-wrapper">
+                  <div className="message-content">
+                    {message.isForm ? (
+                      <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
+                    ) : message.isForm2 ? (
+                      <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
+                    ) : (
+                      <>
+                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
 
-                    {message.sources && message.sources.length > 0 && (
-                      <div className="sources-section">
-                        <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
-                        {message.sources.map((source, idx) => (
-                          <div
-                            key={idx}
-                            className="source-item"
-                            onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <div className="source-name">
-                              {source.document_name}
-                              <span className="relevance-score">
-                                ({(source.relevance_score * 100).toFixed(0)}% shoda)
-                              </span>
-                            </div>
-                            {source.metadata?.department && (
-                              <div className="source-metadata">
-                                📍 Oddělení: {source.metadata.department}
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="sources-section">
+                            <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
+                            {message.sources.map((source, idx) => (
+                              <div
+                                key={idx}
+                                className="source-item"
+                                onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <div className="source-name">
+                                  {source.document_name}
+                                  <span className="relevance-score">
+                                    ({(source.relevance_score * 100).toFixed(0)}% shoda)
+                                  </span>
+                                </div>
+                                {source.metadata?.department && (
+                                  <div className="source-metadata">
+                                    📍 Oddělení: {source.metadata.department}
+                                  </div>
+                                )}
+                                {source.metadata?.process_owner && (
+                                  <div className="source-metadata">
+                                    👤 Vlastník procesu: {source.metadata.process_owner}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {source.metadata?.process_owner && (
-                              <div className="source-metadata">
-                                👤 Vlastník procesu: {source.metadata.process_owner}
-                              </div>
-                            )}
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-              </div>
+                  </div>
 
-              <div className="message-timestamp">
-                {formatTime(message.timestamp)}
-                {message.processingTime && (
-                  <span className="processing-time">
-                    {' '}• {message.processingTime.toFixed(2)}s
-                  </span>
-                )}
-              </div>
+                  <div className="message-timestamp">
+                    {formatTime(message.timestamp)}
+                    {message.processingTime && (
+                      <span className="processing-time">
+                        {' '}• {message.processingTime.toFixed(2)}s
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="message-content">
+                    {message.isForm ? (
+                      <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
+                    ) : message.isForm2 ? (
+                      <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
+                    ) : (
+                      <>
+                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="sources-section">
+                            <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
+                            {message.sources.map((source, idx) => (
+                              <div
+                                key={idx}
+                                className="source-item"
+                                onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <div className="source-name">
+                                  {source.document_name}
+                                  <span className="relevance-score">
+                                    ({(source.relevance_score * 100).toFixed(0)}% shoda)
+                                  </span>
+                                </div>
+                                {source.metadata?.department && (
+                                  <div className="source-metadata">
+                                    📍 Oddělení: {source.metadata.department}
+                                  </div>
+                                )}
+                                {source.metadata?.process_owner && (
+                                  <div className="source-metadata">
+                                    👤 Vlastník procesu: {source.metadata.process_owner}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="message-timestamp">
+                    {formatTime(message.timestamp)}
+                    {message.processingTime && (
+                      <span className="processing-time">
+                        {' '}• {message.processingTime.toFixed(2)}s
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
 
           {isLoading && (
             <div className="message assistant">
-              <div className="message-content">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+              <img
+                src="/Resources/robot.png"
+                alt="Robot Assistant"
+                className="robot-avatar"
+              />
+              <div className="message-wrapper">
+                <div className="message-content">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
                 </div>
               </div>
             </div>
