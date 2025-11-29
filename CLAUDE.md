@@ -48,5 +48,6 @@ Environment variables (`.env`) contain only secrets and environment-specific val
 -   "Jaké procesy má oddělení CI?" (CI department processes)
 
 ## Resources
-- InterSystems IRIS Vector Search: https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit
+- InterSystems IRIS Vector Search Reference (NOT required for this project): https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit
+  - The FHIR-AI-Hackathon-Kit directory is included for reference only. This project implements its own vector search integration and does not depend on the kit.
 - Additional documentation: https://docs.google.com/document/d/1Vd1ltLGVu0yFTqC8BLcWroGTwIXRB-9xUg9ux2rO8wI/edit?usp=sharing

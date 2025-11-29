@@ -6,3 +6,8 @@ pydantic
 pydantic-settings
 python-dotenv
 requests
+intersystems-irispython
+numpy
+python-docx
+openpyxl
+pandas
