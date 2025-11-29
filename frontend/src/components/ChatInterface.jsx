@@ -8,7 +8,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 function TravelForm({ onSubmit }) {
   const [formData, setFormData] = useState({
     destination: '',
-    duration: '',
+    dateFrom: '',
+    dateTo: '',
     transport: ''
   })
 
@@ -68,12 +69,12 @@ function TravelForm({ onSubmit }) {
             fontWeight: '500',
             color: '#555'
           }}>
-            Na jak dlouho:
+            Od:
           </label>
           <input
-            type="text"
-            name="duration"
-            value={formData.duration}
+            type="date"
+            name="dateFrom"
+            value={formData.dateFrom}
             onChange={handleChange}
             required
             style={{
@@ -83,7 +84,31 @@ function TravelForm({ onSubmit }) {
               border: '1px solid #ced4da',
               fontSize: '14px'
             }}
-            placeholder="Například: 2 dny, 1 týden, ..."
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Do:
+          </label>
+          <input
+            type="date"
+            name="dateTo"
+            value={formData.dateTo}
+            onChange={handleChange}
+            required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ced4da',
+              fontSize: '14px'
+            }}
           />
         </div>
 
@@ -357,7 +382,7 @@ function ChatInterface({ userRole, userId }) {
     // Handle form submission - just thank the user
     const thankYouMessage = {
       type: 'assistant',
-      text: `Děkuji za vyplnění formuláře!\n\nVaše údaje:\n- Kam jedu: ${formData.destination}\n- Na jak dlouho: ${formData.duration}\n- Jak: ${formData.transport}`,
+      text: `Děkuji za vyplnění formuláře!\n\nVaše údaje:\n- Destinace: ${formData.destination}\n- Od: ${formData.dateFrom}\n- Do: ${formData.dateTo}\n- Dopravní prostředek: ${formData.transport}`,
       timestamp: new Date()
     }
     setMessages(prev => [...prev, thankYouMessage])
