@@ -6,7 +6,7 @@
 }
 
 .app-header {
-  background: linear-gradient(135deg, #1976d2, #1565c0);
+  background: linear-gradient(135deg, #0B2265, #1a3378);
   color: white;
   padding: 0.75rem 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -59,7 +59,7 @@
 }
 
 .role-selector option {
-  background-color: #1565c0;
+  background-color: #1a3378;
   color: white;
 }
 

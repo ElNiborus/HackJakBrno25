@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ChatInterface from './components/ChatInterface'
 import './App.css'
-import logo from '../Resources/logo_nemocnice.svg'
+import logo from '../Resources/logo_nemocnice_bile.png'
 
 const users = [
   { userId: 1, name: 'Tereza', role: 'Sestřička' },
