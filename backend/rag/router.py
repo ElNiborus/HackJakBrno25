@@ -4,6 +4,7 @@ from openai import OpenAI
 
 from models.schemas import Message
 from config import get_settings
+from rag.prompts import ROUTING_SYSTEM_PROMPT, get_routing_user_message
 
 logger = logging.getLogger(__name__)
 
@@ -34,19 +35,20 @@ class RAGRouter:
             bool: True if RAG retrieval should be used, False otherwise
         """
         try:
-            # Simple LLM-based routing
-            system_prompt = """Rozhodni, jestli následující dotaz vyžaduje inforamce ze směrnic, předipisů, kontaktů a dalších dokumentů v RAG databázi.
-V databázi je plno dokumentů a assistent má přístup k jejich obsahu. Pokud se dotaz ptá na něco co se týká prácovních postupů či práce obecně, měl by použít RAG pro získání relevantních informací.
+            # Get prompts from the prompts module
+            system_prompt = ROUTING_SYSTEM_PROMPT
+            user_message = get_routing_user_message(query)
 
-Odpověz FALSE pouze pokud:
-- Dotaz je čistě osobní nebo konverzační povahy, např.: Jak se máš?, Co umíš?, Jak mi můžeš pomoci?
-- Obecná konverzace bez specifické otázky
-
-Ve všech zbylých případě odpověz TRUE.
-
-Vždy odpověz pouze TRUE nebo FALSE a nic jiného."""
-
-            user_message = f"Dotaz: {query}\n\nRozhodnutí:"
+            # Log the routing request
+            logger.info("=" * 80)
+            logger.info("RAG ROUTING DECISION")
+            logger.info("=" * 80)
+            logger.info(f"Query: {query}")
+            logger.info("-" * 80)
+            logger.info(f"Routing System Prompt:\n{system_prompt}")
+            logger.info("-" * 80)
+            logger.info(f"Routing User Message:\n{user_message}")
+            logger.info("-" * 80)
 
             # Call LLM for routing decision
             response = self.client.chat.completions.create(
@@ -59,10 +61,13 @@ Vždy odpověz pouze TRUE nebo FALSE a nic jiného."""
             )
 
             decision_text = response.choices[0].message.content.strip()
-            logger.info(f"Routing LLM decision text: {decision_text}")
             needs_rag = "TRUE" in decision_text.upper()
 
-            logger.info(f"Routing decision for '{query[:50]}...': needs_rag={needs_rag} (LLM routing)")
+            # Log the routing decision
+            logger.info(f"LLM Decision: {decision_text}")
+            logger.info(f"Final Routing Decision: needs_rag={needs_rag}")
+            logger.info("=" * 80)
+
             return needs_rag
 
         except Exception as e:
