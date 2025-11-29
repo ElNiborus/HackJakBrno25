@@ -42,9 +42,16 @@ function ChatInterface() {
     setInputValue('')
     setIsLoading(true)
 
+    console.log('[ChatInterface] Sending query:', query)
+    console.log('[ChatInterface] API URL:', API_URL)
+    const startTime = Date.now()
+
     try {
       // Run semantic search (RAG)
+      console.log('[ChatInterface] Making POST request to /query...')
       const ragResponse = await axios.post(`${API_URL}/query`, { query })
+      const elapsed = Date.now() - startTime
+      console.log(`[ChatInterface] Response received in ${elapsed}ms:`, ragResponse.data)
 
       const assistantMessage = {
         type: 'assistant',
@@ -55,9 +62,17 @@ function ChatInterface() {
       }
 
       setMessages(prev => [...prev, assistantMessage])
+      console.log('[ChatInterface] Message added to state')
 
     } catch (error) {
-      console.error('Error querying assistant:', error)
+      const elapsed = Date.now() - startTime
+      console.error(`[ChatInterface] Error after ${elapsed}ms:`, error)
+      console.error('[ChatInterface] Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        code: error.code
+      })
 
       const errorMessage = {
         type: 'assistant',
@@ -69,6 +84,7 @@ function ChatInterface() {
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
+      console.log('[ChatInterface] Loading state set to false')
     }
   }
 
