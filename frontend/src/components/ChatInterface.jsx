@@ -1457,24 +1457,37 @@ function ChatInterface({ userRole, userId }) {
         )}
 
         <form onSubmit={handleSubmit} className="input-container">
-          <button
-            type="button"
-            onClick={toggleVoiceInput}
-            disabled={isLoading}
-            className={`voice-button ${isListening ? 'listening' : ''}`}
-            aria-label={isListening ? 'Zastavit nahrávání' : 'Začít hlasové zadávání'}
-            title={isListening ? 'Zastavit nahrávání' : 'Hlasové zadávání'}
-          >
-            {isListening ? '🔴' : '🎤'}
-          </button>
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Napište svou otázku..."
-            disabled={isLoading}
-            className="chat-input"
-          />
+          <div className="input-wrapper">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Napište svou otázku..."
+              disabled={isLoading}
+              className="chat-input"
+            />
+            <button
+              type="button"
+              onClick={toggleVoiceInput}
+              disabled={isLoading}
+              className={`voice-button ${isListening ? 'listening' : ''}`}
+              aria-label={isListening ? 'Zastavit nahrávání' : 'Začít hlasové zadávání'}
+              title={isListening ? 'Zastavit nahrávání' : 'Hlasové zadávání'}
+            >
+              {isListening ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="8" fill="#dc2626" stroke="#dc2626" strokeWidth="2"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="4" width="6" height="10" rx="3" stroke="#6b7280" strokeWidth="2"/>
+                  <path d="M6 12C6 15.3137 8.68629 18 12 18C15.3137 18 18 15.3137 18 12" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="12" y1="18" x2="12" y2="21" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="9" y1="21" x2="15" y2="21" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              )}
+            </button>
+          </div>
           <button
             type="submit"
             disabled={isLoading || !inputValue.trim()}
