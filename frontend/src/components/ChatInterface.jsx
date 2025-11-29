@@ -1281,12 +1281,12 @@ function ChatInterface({ userRole, userId }) {
                                       transition: 'all 0.2s'
                                     }}
                                     onMouseEnter={(e) => {
-                                      e.target.style.backgroundColor = '#dbeafe';
-                                      e.target.style.borderColor = '#93c5fd';
+                                      e.target.style.backgroundColor = '#d4dcec';
+                                      e.target.style.borderColor = '#1a3378';
                                     }}
                                     onMouseLeave={(e) => {
-                                      e.target.style.backgroundColor = '#f0f4ff';
-                                      e.target.style.borderColor = '#dbeafe';
+                                      e.target.style.backgroundColor = '#e8eef8';
+                                      e.target.style.borderColor = '#c5d0de';
                                     }}
                                   >
                                     {sources.length > 1 ? `Úseky 1-${sources.length}` : 'Úsek 1'}
@@ -1301,9 +1301,9 @@ function ChatInterface({ userRole, userId }) {
                                           handleDocumentClick(source.document_name, source.chunk_text);
                                         }}
                                         style={{
-                                          backgroundColor: '#f0f4ff',
-                                          color: '#2563eb',
-                                          border: '1px solid #dbeafe',
+                                          backgroundColor: '#e8eef8',
+                                          color: '#0B2265',
+                                          border: '1px solid #c5d0de',
                                           borderRadius: '6px',
                                           padding: '6px 12px',
                                           fontSize: '13px',
@@ -1313,12 +1313,12 @@ function ChatInterface({ userRole, userId }) {
                                           transition: 'all 0.2s'
                                         }}
                                         onMouseEnter={(e) => {
-                                          e.target.style.backgroundColor = '#dbeafe';
-                                          e.target.style.borderColor = '#93c5fd';
+                                          e.target.style.backgroundColor = '#d4dcec';
+                                          e.target.style.borderColor = '#1a3378';
                                         }}
                                         onMouseLeave={(e) => {
-                                          e.target.style.backgroundColor = '#f0f4ff';
-                                          e.target.style.borderColor = '#dbeafe';
+                                          e.target.style.backgroundColor = '#e8eef8';
+                                          e.target.style.borderColor = '#c5d0de';
                                         }}
                                       >
                                         Úsek {idx + 1}
