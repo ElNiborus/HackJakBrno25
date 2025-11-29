@@ -20,13 +20,20 @@
 .app-header h1 {
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0;
+  margin-top: 0;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .subtitle {
   font-size: 0.75rem;
   opacity: 0.9;
   font-weight: 300;
+  margin-top: 0.1rem;
+  margin-bottom: 0;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .role-selector {
