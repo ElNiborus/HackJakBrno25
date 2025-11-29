@@ -36,11 +36,13 @@ class ResponseGenerator:
             formatted_history = self._format_history(history) if history else None
 
             # System prompt for FN Brno assistant
+            history_section = f"HISTORIE KONVERZACE:\n{formatted_history}\n\n" if formatted_history else ""
+
             system_prompt = f"""Jsi virtuální asistent pro Fakultní nemocnici Brno (FN Brno).
 Tvým úkolem je pomáhat zaměstnancům nemocnice s navigací v interních procesech,
 organizační struktuře a administrativních úkonech.
 
-{f"HISTORIE KONVERZACE:\n{formatted_history}\n" if formatted_history else ""}PRAVIDLA:
+{history_section}PRAVIDLA:
 1. Odpovídej {"na základě poskytnutého kontextu z dokumentů a historie konverzace" if context else "na základě historie konverzace"}.
 2. Odpovídej jasně, stručně a v češtině.
 3. Pokud je to možné, uveď konkrétní oddělení nebo osobu zodpovědnou za daný proces.
