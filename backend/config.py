@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-5-mini"
 
     # RAG Configuration
-    top_k_results: int = 5
+    top_k_results: int = 10
     min_relevance_score: float = 0.0
 
     # Conversation Configuration

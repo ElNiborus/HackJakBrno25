@@ -968,44 +968,6 @@ function ChatInterface({ userRole, userId }) {
 
     if (!inputValue.trim() || isLoading) return
 
-    // Check if user typed "FORM"
-    if (inputValue.trim().toUpperCase() === 'FORM') {
-      const userMessage = {
-        type: 'user',
-        text: inputValue,
-        timestamp: new Date()
-      }
-
-      const formMessage = {
-        type: 'assistant',
-        isForm: true,
-        timestamp: new Date()
-      }
-
-      setMessages(prev => [...prev, userMessage, formMessage])
-      setInputValue('')
-      return
-    }
-
-    // Check if user typed "FORM2"
-    if (inputValue.trim().toUpperCase() === 'FORM2') {
-      const userMessage = {
-        type: 'user',
-        text: inputValue,
-        timestamp: new Date()
-      }
-
-      const formMessage = {
-        type: 'assistant',
-        isForm2: true,
-        timestamp: new Date()
-      }
-
-      setMessages(prev => [...prev, userMessage, formMessage])
-      setInputValue('')
-      return
-    }
-
     const userMessage = {
       type: 'user',
       text: inputValue,
@@ -1045,6 +1007,7 @@ function ChatInterface({ userRole, userId }) {
         sources: chatResponse.data.sources || [],
         usedRag: chatResponse.data.used_rag,
         processingTime: chatResponse.data.processing_time,
+        actionType: chatResponse.data.action_type,
         timestamp: new Date()
       }
 
@@ -1125,10 +1088,23 @@ function ChatInterface({ userRole, userId }) {
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.type}`}>
               <div className="message-content">
-                {message.isForm ? (
-                  <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
-                ) : message.isForm2 ? (
-                  <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
+                {message.actionType === 'show_trip_form' ? (
+                  <>
+                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                    <TravelForm
+                      onSubmit={handleFormSubmit}
+                      onDocumentUpload={handleDocumentUpload}
+                      userId={userId}
+                    />
+                  </>
+                ) : message.actionType === 'show_expense_form' ? (
+                  <>
+                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                    <TripExpenseForm
+                      onSubmit={handleForm2Submit}
+                      userId={userId}
+                    />
+                  </>
                 ) : (
                   <>
                     <div className="message-text">{renderTextWithLinks(message.text)}</div>
