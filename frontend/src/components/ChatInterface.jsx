@@ -12,6 +12,7 @@ function TravelForm({ onSubmit }) {
     dateTo: '',
     transport: ''
   })
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -22,6 +23,7 @@ function TravelForm({ onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setIsSubmitted(true)
     onSubmit(formData)
   }
 
@@ -144,21 +146,23 @@ function TravelForm({ onSubmit }) {
 
         <button
           type="submit"
+          disabled={isSubmitted}
           style={{
-            backgroundColor: '#007bff',
+            backgroundColor: isSubmitted ? '#28a745' : '#007bff',
             color: 'white',
             padding: '10px 20px',
             border: 'none',
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'background-color 0.2s'
+            cursor: isSubmitted ? 'default' : 'pointer',
+            transition: 'background-color 0.2s',
+            opacity: isSubmitted ? 1 : 1
           }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+          onMouseEnter={(e) => !isSubmitted && (e.target.style.backgroundColor = '#0056b3')}
+          onMouseLeave={(e) => !isSubmitted && (e.target.style.backgroundColor = '#007bff')}
         >
-          Odeslat
+          {isSubmitted ? '✓' : 'Odeslat'}
         </button>
       </form>
     </div>
