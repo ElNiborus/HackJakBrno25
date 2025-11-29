@@ -20,13 +20,47 @@
 .app-header h1 {
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0;
+  margin-top: 0;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .subtitle {
   font-size: 0.75rem;
   opacity: 0.9;
   font-weight: 300;
+  margin-top: 0.1rem;
+  margin-bottom: 0;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.role-selector {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.role-selector:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.role-selector:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.role-selector option {
+  background-color: #1565c0;
+  color: white;
 }
 
 .app-main {
@@ -60,5 +94,10 @@
 
   .app-main {
     padding: 0.5rem 1rem;
+  }
+
+  .role-selector {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
   }
 }

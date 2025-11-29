@@ -1,8 +1,9 @@
 .chat-interface {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
+  position: relative;
 }
 
 .chat-container {
@@ -261,6 +262,50 @@
   background-color: var(--surface);
 }
 
+.voice-button {
+  padding: 0.875rem 1rem;
+  background-color: white;
+  color: #1976d2;
+  border: 2px solid #c5d0de;
+  border-radius: 24px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.voice-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1976d2, #1565c0);
+  border-color: #1976d2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+}
+
+.voice-button.listening {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  border-color: #dc2626;
+  color: white;
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.voice-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
 .chat-input {
   flex: 1;
   padding: 0.875rem 1.25rem;
@@ -368,5 +413,90 @@
 
   .example-button {
     width: 100%;
+  }
+}
+
+/* PDF Sidebar */
+.pdf-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 50%;
+  max-width: 600px;
+  height: 100vh;
+  background-color: white;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.pdf-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f5f5f5;
+}
+
+.pdf-sidebar-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #1976d2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.close-sidebar-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-sidebar-btn:hover {
+  background-color: #e0e0e0;
+  color: #1976d2;
+}
+
+.pdf-sidebar-content {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+  background-color: #525659;
+}
+
+.pdf-sidebar-content canvas {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .pdf-sidebar {
+    width: 100%;
+    max-width: none;
   }
 }

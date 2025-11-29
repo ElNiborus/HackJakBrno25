@@ -552,6 +552,13 @@ npm install
 npm run dev
 ```
 
+### 6. Possibly delete DB if wanted (to regenerate data)
+
+```bash
+docker stop iris-community
+docker rm iris-community
+```
+
 Frontend runs at `http://localhost:3000` (or `http://localhost:3001` if port 3000 is in use)
 
 ## Usage
