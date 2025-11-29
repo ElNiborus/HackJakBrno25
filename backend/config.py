@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     iris_password: str = "SYS"
 
     # Model Configuration
-    embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
-    embedding_dimension: int = 384
+    embedding_model: str = "text-embedding-3-large"
+    embedding_dimension: int = 3072
     openai_model: str = "gpt-4o-mini"
 
     # RAG Configuration
