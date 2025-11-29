@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # Model Configuration
     embedding_model: str = "text-embedding-3-large"
     embedding_dimension: int = 3072
-    openai_model: str = "gpt-4o-mini"
+    openai_model: str = "gpt-5-mini"
 
     # RAG Configuration
     top_k_results: int = 5
