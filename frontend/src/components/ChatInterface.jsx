@@ -4,6 +4,138 @@ import './ChatInterface.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+// Travel Form Component
+function TravelForm({ onSubmit }) {
+  const [formData, setFormData] = useState({
+    destination: '',
+    duration: '',
+    transport: ''
+  })
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSubmit(formData)
+  }
+
+  return (
+    <div style={{
+      backgroundColor: '#f8f9fa',
+      padding: '20px',
+      borderRadius: '8px',
+      border: '1px solid #dee2e6'
+    }}>
+      <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#333' }}>
+        Formulář pracovní cesty
+      </h3>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Kam jedu:
+          </label>
+          <input
+            type="text"
+            name="destination"
+            value={formData.destination}
+            onChange={handleChange}
+            required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ced4da',
+              fontSize: '14px'
+            }}
+            placeholder="Například: Praha, Brno, ..."
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Na jak dlouho:
+          </label>
+          <input
+            type="text"
+            name="duration"
+            value={formData.duration}
+            onChange={handleChange}
+            required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ced4da',
+              fontSize: '14px'
+            }}
+            placeholder="Například: 2 dny, 1 týden, ..."
+          />
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Jak:
+          </label>
+          <input
+            type="text"
+            name="transport"
+            value={formData.transport}
+            onChange={handleChange}
+            required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ced4da',
+              fontSize: '14px'
+            }}
+            placeholder="Například: autem, vlakem, letadlem, ..."
+          />
+        </div>
+
+        <button
+          type="submit"
+          style={{
+            backgroundColor: '#007bff',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+        >
+          Odeslat
+        </button>
+      </form>
+    </div>
+  )
+}
+
 // Convert markdown links to clickable links while preserving formatting
 function renderTextWithLinks(text) {
   if (!text) return text
@@ -217,10 +349,39 @@ function ChatInterface({ userRole, userId }) {
     console.log('[ChatInterface] Current chunk text:', currentChunkText)
   }, [currentPdfUrl, currentChunkText])
 
+  const handleFormSubmit = (formData) => {
+    // Handle form submission - just thank the user
+    const thankYouMessage = {
+      type: 'assistant',
+      text: `Děkuji za vyplnění formuláře!\n\n**Vaše údaje:**\n- **Kam jedu:** ${formData.destination}\n- **Na jak dlouho:** ${formData.duration}\n- **Jak:** ${formData.transport}`,
+      timestamp: new Date()
+    }
+    setMessages(prev => [...prev, thankYouMessage])
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!inputValue.trim() || isLoading) return
+
+    // Check if user typed "FORM"
+    if (inputValue.trim().toUpperCase() === 'FORM') {
+      const userMessage = {
+        type: 'user',
+        text: inputValue,
+        timestamp: new Date()
+      }
+
+      const formMessage = {
+        type: 'assistant',
+        isForm: true,
+        timestamp: new Date()
+      }
+
+      setMessages(prev => [...prev, userMessage, formMessage])
+      setInputValue('')
+      return
+    }
 
     const userMessage = {
       type: 'user',
@@ -338,37 +499,43 @@ function ChatInterface({ userRole, userId }) {
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.type}`}>
               <div className="message-content">
-                <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                {message.isForm ? (
+                  <TravelForm onSubmit={handleFormSubmit} />
+                ) : (
+                  <>
+                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
 
-                {message.sources && message.sources.length > 0 && (
-                  <div className="sources-section">
-                    <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
-                    {message.sources.map((source, idx) => (
-                      <div
-                        key={idx}
-                        className="source-item"
-                        onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <div className="source-name">
-                          {source.document_name}
-                          <span className="relevance-score">
-                            ({(source.relevance_score * 100).toFixed(0)}% shoda)
-                          </span>
-                        </div>
-                        {source.metadata?.department && (
-                          <div className="source-metadata">
-                            📍 Oddělení: {source.metadata.department}
+                    {message.sources && message.sources.length > 0 && (
+                      <div className="sources-section">
+                        <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
+                        {message.sources.map((source, idx) => (
+                          <div
+                            key={idx}
+                            className="source-item"
+                            onClick={() => handleDocumentClick(source.document_name, source.chunk_text)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <div className="source-name">
+                              {source.document_name}
+                              <span className="relevance-score">
+                                ({(source.relevance_score * 100).toFixed(0)}% shoda)
+                              </span>
+                            </div>
+                            {source.metadata?.department && (
+                              <div className="source-metadata">
+                                📍 Oddělení: {source.metadata.department}
+                              </div>
+                            )}
+                            {source.metadata?.process_owner && (
+                              <div className="source-metadata">
+                                👤 Vlastník procesu: {source.metadata.process_owner}
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {source.metadata?.process_owner && (
-                          <div className="source-metadata">
-                            👤 Vlastník procesu: {source.metadata.process_owner}
-                          </div>
-                        )}
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
 
