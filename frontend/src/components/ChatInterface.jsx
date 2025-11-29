@@ -107,7 +107,7 @@ function ChatInterface() {
 
                 {message.sources && message.sources.length > 0 && (
                   <div className="sources-section">
-                    <div className="sources-header">📚 Zdroje informací:</div>
+                    <div className="sources-header">📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}</div>
                     {message.sources.map((source, idx) => (
                       <div
                         key={idx}
@@ -135,15 +135,15 @@ function ChatInterface() {
                     ))}
                   </div>
                 )}
+              </div>
 
-                <div className="message-timestamp">
-                  {formatTime(message.timestamp)}
-                  {message.processingTime && (
-                    <span className="processing-time">
-                      {' '}• {message.processingTime.toFixed(2)}s
-                    </span>
-                  )}
-                </div>
+              <div className="message-timestamp">
+                {formatTime(message.timestamp)}
+                {message.processingTime && (
+                  <span className="processing-time">
+                    {' '}• {message.processingTime.toFixed(2)}s
+                  </span>
+                )}
               </div>
             </div>
           ))}
@@ -181,32 +181,34 @@ function ChatInterface() {
           </button>
         </form>
 
-        <div className="example-queries">
-          <p className="example-title">💡 Příklady otázek:</p>
-          <div className="example-buttons">
-            <button
-              onClick={() => setInputValue('Co mám dělat, když si chci koupit nový mobil?')}
-              className="example-button"
-              disabled={isLoading}
-            >
-              Nákup mobilu
-            </button>
-            <button
-              onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
-              className="example-button"
-              disabled={isLoading}
-            >
-              Pracovní cesta
-            </button>
-            <button
-              onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
-              className="example-button"
-              disabled={isLoading}
-            >
-              Procesy CI
-            </button>
+        {!messages.some(m => m.type === 'user') && (
+          <div className="example-queries">
+            <p className="example-title">💡 Příklady otázek:</p>
+            <div className="example-buttons">
+              <button
+                onClick={() => setInputValue('Co mám dělat, když si chci koupit nový mobil?')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Nákup mobilu
+              </button>
+              <button
+                onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Pracovní cesta
+              </button>
+              <button
+                onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Procesy CI
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
