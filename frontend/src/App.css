@@ -7,31 +7,31 @@
 .app-header {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
-  padding: 1.5rem 2rem;
+  padding: 0.75rem 1.5rem;
   box-shadow: var(--shadow);
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 .app-header h1 {
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .subtitle {
-  font-size: 1rem;
+  font-size: 0.75rem;
   opacity: 0.9;
   font-weight: 300;
 }
 
 .app-main {
   flex: 1;
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 0.5rem 2.5%;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
 }
@@ -39,22 +39,22 @@
 .app-footer {
   background-color: var(--surface);
   border-top: 1px solid var(--border-color);
-  padding: 1rem 2rem;
+  padding: 0.5rem 2rem;
   text-align: center;
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 @media (max-width: 768px) {
   .app-header {
-    padding: 1rem;
+    padding: 0.5rem 1rem;
   }
 
   .app-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
   }
 
   .app-main {
-    padding: 1rem;
+    padding: 0.5rem 1rem;
   }
 }

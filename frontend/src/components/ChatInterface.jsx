@@ -240,7 +240,7 @@ function ChatInterface() {
               Nákup mobilu
             </button>
             <button
-              onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
+              onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít své auto?')}
               className="example-button"
               disabled={isLoading}
             >
