@@ -5,7 +5,7 @@ Virtual assistant for University Hospital Brno (FN Brno) - A RAG-based chatbot t
 
 ## Project Overview
 
-This project was created as a PoC (Proof of Concept) for a hackathon. The system uses:
+This project was created as a PoC (Proof of Concept) for a hackathon in Brno. The system uses:
 - **RAG (Retrieval-Augmented Generation)** for answering employee questions
 - **InterSystems IRIS Vector Search** as the vector database
 - **OpenAI API** for response generation
