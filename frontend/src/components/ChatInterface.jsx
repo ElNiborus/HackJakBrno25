@@ -118,7 +118,7 @@ function DocumentUploadForm({ onSubmit }) {
 }
 
 // Travel Form Component
-function TravelForm({ onSubmit, onDocumentUpload }) {
+function TravelForm({ onSubmit, onDocumentUpload, userId }) {
   const [formData, setFormData] = useState({
     destination: '',
     dateFrom: '',
@@ -127,6 +127,10 @@ function TravelForm({ onSubmit, onDocumentUpload }) {
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showDocumentUpload, setShowDocumentUpload] = useState(false)
+
+  // Check if user has referentske zkousky (Hana and Josef have them, Tereza doesn't)
+  const hasReferentskeZkousky = userId === 2 || userId === 3 // Hana or Josef
+  const userName = userId === 1 ? 'Tereza' : userId === 2 ? 'Hana' : 'Josef'
 
   const handleChange = (e) => {
     setFormData({
@@ -279,9 +283,36 @@ function TravelForm({ onSubmit, onDocumentUpload }) {
           </select>
         </div>
 
+        {formData.transport === 'Firemní auto' && !isSubmitted && (
+          <div style={{
+            marginBottom: '20px',
+            padding: '15px',
+            borderRadius: '8px',
+            backgroundColor: hasReferentskeZkousky ? '#d4edda' : '#f8d7da',
+            border: `1px solid ${hasReferentskeZkousky ? '#c3e6cb' : '#f5c6cb'}`,
+            color: hasReferentskeZkousky ? '#155724' : '#721c24'
+          }}>
+            {hasReferentskeZkousky ? (
+              <>
+                <strong>✓ Oprávnění potvrzeno</strong>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                  Máte referentské zkoušky a můžete použít firemní auto.
+                </p>
+              </>
+            ) : (
+              <>
+                <strong>✗ Chybí oprávnění</strong>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                  Nemáte referentské zkoušky a nemůžete použít firemní auto. Zvolte prosím jiný dopravní prostředek.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={isSubmitted}
+          disabled={isSubmitted || (formData.transport === 'Firemní auto' && !hasReferentskeZkousky)}
           style={{
             backgroundColor: isSubmitted ? '#28a745' : '#007bff',
             color: 'white',
@@ -685,7 +716,7 @@ function ChatInterface({ userRole, userId }) {
             <div key={index} className={`message ${message.type}`}>
               <div className="message-content">
                 {message.isForm ? (
-                  <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} />
+                  <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
                 ) : (
                   <>
                     <div className="message-text">{renderTextWithLinks(message.text)}</div>
