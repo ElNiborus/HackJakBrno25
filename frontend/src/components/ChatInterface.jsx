@@ -1185,7 +1185,7 @@ function ChatInterface({ userRole, userId }) {
                     <div className="message-content">
                 {message.actionType === 'show_trip_form' ? (
                   <>
-                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                    <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
                     <TravelForm
                       onSubmit={handleFormSubmit}
                       onDocumentUpload={handleDocumentUpload}
@@ -1194,7 +1194,7 @@ function ChatInterface({ userRole, userId }) {
                   </>
                 ) : message.actionType === 'show_expense_form' ? (
                   <>
-                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                    <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
                     <TripExpenseForm
                       onSubmit={handleForm2Submit}
                       userId={userId}
@@ -1202,7 +1202,7 @@ function ChatInterface({ userRole, userId }) {
                   </>
                 ) : (
                   <>
-                    <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                    <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
 
                     {message.sources && message.sources.length > 0 && (
                       <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>
@@ -1384,7 +1384,7 @@ function ChatInterface({ userRole, userId }) {
                   <div className="message-content">
                     {message.actionType === 'show_trip_form' ? (
                       <>
-                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                        <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
                         <TravelForm
                           onSubmit={handleFormSubmit}
                           onDocumentUpload={handleDocumentUpload}
@@ -1393,7 +1393,7 @@ function ChatInterface({ userRole, userId }) {
                       </>
                     ) : message.actionType === 'show_expense_form' ? (
                       <>
-                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                        <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
                         <TripExpenseForm
                           onSubmit={handleForm2Submit}
                           userId={userId}
@@ -1401,7 +1401,7 @@ function ChatInterface({ userRole, userId }) {
                       </>
                     ) : (
                       <>
-                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+                        <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
 
                         {message.sources && message.sources.length > 0 && (
                           <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>

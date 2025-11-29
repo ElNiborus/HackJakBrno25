@@ -91,7 +91,8 @@ KONTEXT: K dispozici máš dokumenty z RAG databáze.
 - Odpovídej na základě poskytnutého kontextu z dokumentů
 - Pokud je to možné, uveď konkrétní oddělení nebo osobu zodpovědnou, na kterou se mohou obrátit
 - Poskytuj krok za krokem návod, jak dále postupovat
-- Pokud informace není v kontextu, řekni to upřímně a navrhni nejbližší alternativu (možná oddělení, kontakty, obecné postupy)"""
+- Pokud informace není v kontextu, řekni to upřímně a navrhni nejbližší alternativu (možná oddělení, kontakty, obecné postupy)
+- Pokud se téma týká helpdesku nebo ho nenajdeš v dokumentech, dej odkaz na helpdesk: https://docs.google.com/forms/d/e/1FAIpQLSeKlyskfuXlPit6OaQfiPoa7yIIkGNavCJIusXkmQvQDj6jMA/viewform . Link vlož jako HTML a tag with an appropriate display name."""
 
 CONVERSATIONAL_EXTENSION = """
 KONTEXT: Uživatel si povídá nebo se ptá na tvoje schopnosti.
