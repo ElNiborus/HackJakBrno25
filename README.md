@@ -104,9 +104,9 @@ Uses Pydantic Settings for type-safe configuration management:
 
 **Configuration Groups:**
 - **IRIS Database**: Connection parameters (host, port, namespace, credentials)
-- **Embedding Model**: Model name and dimension (text-embedding-3-large, 384D)
-- **OpenAI**: API key and model name (eg gpt-5-mini)
-- **RAG Parameters**: Top K results (5), minimum relevance score (0.0)
+- **Embedding Model**: Model name and dimension (configurable in `backend/config.py`)
+- **OpenAI**: API key and model selection (configurable in `backend/config.py`)
+- **RAG Parameters**: Top K results, minimum relevance score (configurable in `backend/config.py`)
 
 #### Data Ingestion Pipeline
 
@@ -140,19 +140,17 @@ Uses Pydantic Settings for type-safe configuration management:
 **Embedding Generator (`backend/ingestion/embedder.py`):**
 
 - `EmbeddingGenerator`:
-  - Uses SentenceTransformer library
-  - Model: `text-embedding-3-large`
-  - Supports Czech, English, and 50+ languages
-  - Generates 384-dimensional dense vectors
+  - Uses OpenAI Embeddings API
+  - Model and dimensions configurable in `backend/config.py`
+  - Supports multilingual embeddings including Czech
   - Batch processing for efficiency
   - Progress bars for user feedback (tqdm)
-  - Normalizes embeddings for cosine similarity
 
-**Why this model?**
-- Multilingual support (critical for Czech documents)
-- Small size (fast inference, low memory)
-- Good balance of quality vs. performance
-- Well-suited for semantic search tasks
+**Model Selection:**
+The embedding model can be changed in `backend/config.py`. Current implementation uses OpenAI's embedding models for:
+- High-quality multilingual support (critical for Czech documents)
+- Excellent semantic understanding
+- Strong performance on retrieval tasks
 
 #### RAG Components
 
@@ -325,11 +323,11 @@ User sees answer + sources
 - SQL interface (familiar to developers)
 - Handles high-dimensional vectors efficiently
 
-**Why Multilingual Embeddings?**
-- Czech is primary language
-- Some documents may contain English terms
-- Better semantic understanding of mixed content
-- text-embedding-3-large
+**Why OpenAI Embeddings?**
+- Best-in-class multilingual support including Czech
+- High-dimensional vectors for rich semantic representation
+- Superior performance on RAG tasks
+- Model selection configurable in `backend/config.py`
 
 **Why OpenAI?**
 - High-quality language models with strong reasoning capabilities
@@ -354,10 +352,10 @@ User sees answer + sources
 
 **Vector Storage:**
 ```sql
-ChunkVector VECTOR(DOUBLE, 384)
+ChunkVector VECTOR(DOUBLE, {embedding_dimension})
 ```
 - DOUBLE precision (not FLOAT) for accuracy
-- 384 dimensions match embedding model
+- Dimensions match the embedding model configured in `backend/config.py`
 - Stored efficiently in IRIS native format
 
 **Index Strategy:**
@@ -491,17 +489,27 @@ pip install -r requirements.txt
 cp .env.example .env
 
 # Edit .env file with your credentials:
+# REQUIRED:
 # - OPENAI_API_KEY=your-key-here
+#
+# IRIS Database (use defaults for local Docker setup):
 # - IRIS_HOST=localhost
 # - IRIS_PORT=1972
+# - IRIS_NAMESPACE=USER
 # - IRIS_USERNAME=_SYSTEM
 # - IRIS_PASSWORD=SYS
+#
+# Note: Model configuration is in backend/config.py, not in .env
 ```
 
 ### 3. Ingest Data into Database
 
 ```bash
-# From project root directory
+# From project root directory, with backend venv activated
+source backend/venv/bin/activate  # Linux/Mac
+# or
+backend\venv\Scripts\activate  # Windows
+
 python scripts/ingest_data.py
 ```
 
@@ -510,7 +518,7 @@ This script:
 2. Creates table for vector embeddings
 3. Loads all `.docx` and `.xlsx` files from `raw_data/`
 4. Splits documents into chunks
-5. Generates embeddings using multilingual model
+5. Generates embeddings using OpenAI API (configured in `backend/config.py`)
 6. Stores in IRIS database
 7. Creates HNSW index for fast search
 
@@ -518,6 +526,10 @@ This script:
 
 ```bash
 cd backend
+source venv/bin/activate  # Linux/Mac (if not already activated)
+# or
+venv\Scripts\activate  # Windows
+
 uvicorn app:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -541,11 +553,11 @@ npm install
 npm run dev
 ```
 
-Frontend runs at `http://localhost:3000`
+Frontend runs at `http://localhost:3000` (or `http://localhost:3001` if port 3000 is in use)
 
 ## Usage
 
-1. Open browser at `http://localhost:3000`
+1. Open browser at the URL shown by Vite (typically `http://localhost:3000`)
 2. Enter a question in Czech into the chat window
 3. The system:
    - Converts question to embedding
