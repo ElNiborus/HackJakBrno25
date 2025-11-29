@@ -658,6 +658,7 @@ function ChatInterface({ userRole, userId }) {
   const [currentPdfUrl, setCurrentPdfUrl] = useState(null)
   const [currentDocName, setCurrentDocName] = useState('')
   const [currentChunkText, setCurrentChunkText] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const messagesEndRef = useRef(null)
   const recognitionRef = useRef(null)
   const pdfCanvasRef = useRef(null)
@@ -743,6 +744,7 @@ function ChatInterface({ userRole, userId }) {
           
           if (chunkStartIndex !== -1) {
             targetPage = pageNum
+            setCurrentPage(pageNum)
             
             // Build the page text with item indices to find matching items
             let currentPos = 0
@@ -988,7 +990,9 @@ function ChatInterface({ userRole, userId }) {
 
   const handleDocumentClick = (documentName, chunkText) => {
     // Open PDF in sidebar
-    const pdfUrl = `${API_URL}/view-pdf/${documentName}`
+    const pdfName = documentName.replace(/\.[^/.]+$/, ".pdf");
+    const pdfUrl = `${API_URL}/view-pdf/${pdfName}`;
+    console.log('[ChatInterface] Opening PDF:', pdfUrl)
     setCurrentPdfUrl(pdfUrl)
     setCurrentDocName(documentName)
     setCurrentChunkText(chunkText)
@@ -1000,6 +1004,7 @@ function ChatInterface({ userRole, userId }) {
     setCurrentPdfUrl(null)
     setCurrentDocName('')
     setCurrentChunkText('')
+    setCurrentPage(1)
   }
 
   const formatTime = (date) => {
@@ -1169,7 +1174,16 @@ function ChatInterface({ userRole, userId }) {
       {pdfSidebarOpen && (
         <div className="pdf-sidebar">
           <div className="pdf-sidebar-header">
-            <h3>{currentDocName}</h3>
+            <h3>
+              <a 
+                href={`${API_URL}/view-pdf/${currentDocName.replace(/\.[^/.]+$/, ".pdf")}#page=${currentPage}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                {currentDocName.replace(/\.[^/.]+$/, ".pdf")}
+              </a>
+            </h3>
             <button onClick={closePdfSidebar} className="close-sidebar-btn">
               ✕
             </button>
