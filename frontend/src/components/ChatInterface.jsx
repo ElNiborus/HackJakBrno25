@@ -329,15 +329,7 @@ function TripExpenseForm({ onSubmit, userId }) {
               onChange={handleChange}
               required
               disabled={isSubmitted}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: '4px',
-                border: '1px solid #ced4da',
-                fontSize: '14px',
-                backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-                cursor: isSubmitted ? 'not-allowed' : 'pointer'
-              }}
+              className="form-select"
             >
               <option value="">Vyberte pracovní cestu...</option>
               {availableTrips.map((trip) => (
@@ -573,15 +565,7 @@ function TravelForm({ onSubmit, onDocumentUpload, userId }) {
             onChange={handleChange}
             required
             disabled={isSubmitted}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              border: '1px solid #ced4da',
-              fontSize: '14px',
-              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
-              cursor: isSubmitted ? 'not-allowed' : 'pointer'
-            }}
+            className="form-select"
           >
             <option value="">Vyberte dopravní prostředek...</option>
             <option value="Veřejná doprava">Veřejná doprava</option>
