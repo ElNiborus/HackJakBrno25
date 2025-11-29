@@ -240,6 +240,7 @@ function ReceiptUploadSection({ receipts, onReceiptChange, isSubmitted }) {
 function TripExpenseForm({ onSubmit, userId }) {
   const [formData, setFormData] = useState({
     selectedTripId: '',
+    totalAmount: '',
     receipts: []
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -348,6 +349,49 @@ function TripExpenseForm({ onSubmit, userId }) {
           )}
         </div>
 
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '500',
+            color: '#555'
+          }}>
+            Celková částka výdajů:
+          </label>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              type="number"
+              name="totalAmount"
+              value={formData.totalAmount}
+              onChange={handleChange}
+              required
+              disabled={isSubmitted}
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                border: '1px solid #ced4da',
+                fontSize: '14px',
+                backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+                cursor: isSubmitted ? 'not-allowed' : 'text',
+                paddingRight: '35px'
+              }}
+            />
+            <span style={{
+              position: 'absolute',
+              right: '12px',
+              fontSize: '14px',
+              color: '#666',
+              pointerEvents: 'none'
+            }}>
+              Kč
+            </span>
+          </div>
+        </div>
+
         <ReceiptUploadSection
           receipts={formData.receipts}
           onReceiptChange={handleReceiptChange}
@@ -356,7 +400,7 @@ function TripExpenseForm({ onSubmit, userId }) {
 
         <button
           type="submit"
-          disabled={isSubmitted || availableTrips.length === 0 || !formData.selectedTripId}
+          disabled={isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount}
           style={{
             backgroundColor: isSubmitted ? '#28a745' : '#007bff',
             color: 'white',
@@ -365,13 +409,13 @@ function TripExpenseForm({ onSubmit, userId }) {
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: (isSubmitted || availableTrips.length === 0 || !formData.selectedTripId) ? 'not-allowed' : 'pointer',
+            cursor: (isSubmitted || availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) ? 'not-allowed' : 'pointer',
             transition: 'background-color 0.2s',
             marginTop: '20px',
-            opacity: (availableTrips.length === 0 || !formData.selectedTripId) && !isSubmitted ? 0.6 : 1
+            opacity: (availableTrips.length === 0 || !formData.selectedTripId || !formData.totalAmount) && !isSubmitted ? 0.6 : 1
           }}
-          onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && (e.target.style.backgroundColor = '#007bff')}
+          onMouseEnter={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#0056b3')}
+          onMouseLeave={(e) => !isSubmitted && availableTrips.length > 0 && formData.selectedTripId && formData.totalAmount && (e.target.style.backgroundColor = '#007bff')}
         >
           {isSubmitted ? '✓' : 'Odeslat žádost'}
         </button>
@@ -859,6 +903,17 @@ function ChatInterface({ userRole, userId }) {
       })
     }
 
+    const formatCurrency = (amount) => {
+      const num = parseFloat(amount)
+      if (isNaN(num)) return '0 Kč'
+      return new Intl.NumberFormat('cs-CZ', {
+        style: 'currency',
+        currency: 'CZK',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(num)
+    }
+
     const receiptsList = formData.receipts.length > 0
       ? formData.receipts.map((file, index) => `  ${index + 1}. ${file.name}`).join('\n')
       : '  (žádné soubory nebyly nahrány)'
@@ -870,7 +925,7 @@ function ChatInterface({ userRole, userId }) {
 
     const thankYouMessage = {
       type: 'assistant',
-      text: `Děkuji za vyplnění formuláře pro vyúčtování pracovní cesty!${tripDetails}\n\nPočet nahraných účtenek: ${formData.receipts.length}\n\nNahrané soubory:\n${receiptsList}\n\nVaše žádost o vyúčtování byla úspěšně odeslána ke schválení.`,
+      text: `Děkuji za vyplnění formuláře pro vyúčtování pracovní cesty!${tripDetails}\n\nCelková částka výdajů: ${formatCurrency(formData.totalAmount)}\nPočet nahraných účtenek: ${formData.receipts.length}\n\nNahrané soubory:\n${receiptsList}\n\nVaše žádost o vyúčtování byla úspěšně odeslána ke schválení.`,
       timestamp: new Date()
     }
     setMessages(prev => [...prev, thankYouMessage])
