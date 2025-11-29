@@ -353,7 +353,7 @@ function ChatInterface({ userRole, userId }) {
     // Handle form submission - just thank the user
     const thankYouMessage = {
       type: 'assistant',
-      text: `Děkuji za vyplnění formuláře!\n\n**Vaše údaje:**\n- **Kam jedu:** ${formData.destination}\n- **Na jak dlouho:** ${formData.duration}\n- **Jak:** ${formData.transport}`,
+      text: `Děkuji za vyplnění formuláře!\n\nVaše údaje:\n- Kam jedu: ${formData.destination}\n- Na jak dlouho: ${formData.duration}\n- Jak: ${formData.transport}`,
       timestamp: new Date()
     }
     setMessages(prev => [...prev, thankYouMessage])
