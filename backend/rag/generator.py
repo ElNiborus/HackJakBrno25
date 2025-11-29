@@ -20,7 +20,8 @@ class ResponseGenerator:
         query: str,
         context: Optional[str] = None,
         history: Optional[List[Message]] = None,
-        category: IntentCategory = IntentCategory.GENERAL_RAG
+        category: IntentCategory = IntentCategory.GENERAL_RAG,
+        user_system_prompt: Optional[str] = None
     ) -> str:
         """
         Generate response using retrieved context, query, and conversation history.
@@ -44,13 +45,14 @@ class ResponseGenerator:
                 has_context=has_context,
                 has_history=has_history,
                 formatted_history=formatted_history or "",
-                category=category
+                category=category,
+                user_system_prompt=user_system_prompt
             )
 
             user_message = get_user_message(
                 query=query,
                 context=context,
-                has_history=has_history
+                has_history=has_history,
             )
 
             # Log the prompts being sent
