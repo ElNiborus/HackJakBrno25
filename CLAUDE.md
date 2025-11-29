@@ -15,12 +15,18 @@ The knowledge base is derived from a mix of structured and unstructured files:
 See `raw_data/` directory for all data files that are available (several examples for the PoC purposes).
 
 ## Immediate Task (PoC)
-Build a **Single-Turn RAG (Retrieval-Augmented Generation)** prototype using a Vector Database. The vector database must be the InterSystems Vector Search (hackathon rules).
+Build a Single-Turn (for starters) RAG prototype using a Vector Database.
+There should be UI where users can type into a chat and the assistent responds based on the information in the documents.
+
+## Aditional Notes
+The vector database must be the InterSystems Vector Search (hackathon rules).
 See relevant resources:
 https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit
 https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit/blob/main/Tutorial/2-Creating-Vector-DB.ipynb
 https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit/blob/main/Tutorial/3-Vector-Search-LLM-Prompting.ipynb
 It doesn't have to use everything in the git repo above, but must use the vector search component.
+For the main LLM use OpenAI api.
+Important: All of the data and future conversation will be in czech language.
 
 **Key Scenarios to Handle:**
 -   "Co mám dělat, když si chci koupit nový mobil?" (Who handles IT purchases?)
