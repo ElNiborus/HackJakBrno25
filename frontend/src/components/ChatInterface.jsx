@@ -45,7 +45,7 @@ function renderTextWithLinks(text) {
   return parts.length > 0 ? parts : text
 }
 
-function ChatInterface({ userRole }) {
+function ChatInterface() {
   const [messages, setMessages] = useState([
     {
       type: 'assistant',
@@ -55,8 +55,10 @@ function ChatInterface({ userRole }) {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const [keywordResults, setKeywordResults] = useState([])
   const messagesEndRef = useRef(null)
+  const recognitionRef = useRef(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -65,6 +67,42 @@ function ChatInterface({ userRole }) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    // Initialize Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition()
+      recognition.continuous = false
+      recognition.lang = 'cs-CZ' // Czech language
+      recognition.interimResults = false
+      recognition.maxAlternatives = 1
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript
+        setInputValue(transcript)
+        setIsListening(false)
+      }
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error)
+        setIsListening(false)
+      }
+
+      recognition.onend = () => {
+        setIsListening(false)
+      }
+
+      recognitionRef.current = recognition
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop() } catch (e) { /* ignore */ }
+      }
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -83,14 +121,13 @@ function ChatInterface({ userRole }) {
     setIsLoading(true)
 
     console.log('[ChatInterface] Sending query:', query)
-    console.log('[ChatInterface] User role:', userRole)
     console.log('[ChatInterface] API URL:', API_URL)
     const startTime = Date.now()
 
     try {
       // Run semantic search (RAG)
       console.log('[ChatInterface] Making POST request to /query...')
-      const ragResponse = await axios.post(`${API_URL}/query`, { query, role: userRole })
+      const ragResponse = await axios.post(`${API_URL}/query`, { query })
       const elapsed = Date.now() - startTime
       console.log(`[ChatInterface] Response received in ${elapsed}ms:`, ragResponse.data)
 
@@ -136,6 +173,26 @@ function ChatInterface({ userRole }) {
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert('Hlasové ovládání není podporováno ve vašem prohlížeči.')
+      return
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch (error) {
+        console.error('Error starting speech recognition:', error)
+        setIsListening(false)
+      }
+    }
   }
 
   return (
@@ -206,6 +263,16 @@ function ChatInterface({ userRole }) {
         </div>
 
         <form onSubmit={handleSubmit} className="input-container">
+          <button
+            type="button"
+            onClick={toggleVoiceInput}
+            disabled={isLoading}
+            className={`voice-button ${isListening ? 'listening' : ''}`}
+            aria-label={isListening ? 'Zastavit nahrávání' : 'Začít hlasové zadávání'}
+            title={isListening ? 'Zastavit nahrávání' : 'Hlasové zadávání'}
+          >
+            {isListening ? '🔴' : '🎤'}
+          </button>
           <input
             type="text"
             value={inputValue}
@@ -263,3 +330,4 @@ function ChatInterface({ userRole }) {
 }
 
 export default ChatInterface
+
