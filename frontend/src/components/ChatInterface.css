@@ -55,14 +55,14 @@
 }
 
 .message.user .message-content {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  background: linear-gradient(135deg, #1976d2, #1565c0);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .message.assistant .message-content {
   background-color: #f0f4f8;
-  color: var(--text-primary);
+  color: #333333;
   border-bottom-left-radius: 4px;
 }
 
@@ -85,47 +85,54 @@
 
 .sources-section {
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: 0.75rem;
 }
 
 .sources-header {
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.7rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .source-item {
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 6px;
-  font-size: 0.85rem;
+  margin: 0.4rem 0;
+  padding: 0.4rem 0.6rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  font-size: 0.7rem;
   transition: all 0.2s;
+  border-left: 2px solid #1976d2;
 }
 
 .source-item:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.6);
+  transform: translateX(2px);
+  box-shadow: 0 1px 4px rgba(25, 118, 210, 0.2);
 }
 
 .source-name {
   font-weight: 500;
-  margin-bottom: 0.25rem;
-  color: var(--primary-color);
+  margin-bottom: 0.2rem;
+  color: #1976d2;
+  font-size: 0.7rem;
 }
 
 .relevance-score {
-  font-size: 0.75rem;
-  opacity: 0.7;
+  font-size: 0.65rem;
+  opacity: 0.6;
   margin-left: 0.5rem;
+  font-style: italic;
 }
 
 .source-metadata {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-top: 0.25rem;
+  font-size: 0.65rem;
+  opacity: 0.7;
+  margin-top: 0.2rem;
 }
 
 /* Keyword search results styling */
@@ -139,7 +146,7 @@
   font-weight: 600;
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
-  color: var(--primary-dark);
+  color: #1565c0;
 }
 
 .keyword-documents {
@@ -152,20 +159,20 @@
   padding: 0.75rem;
   background-color: rgba(255, 255, 255, 0.7);
   border-radius: 8px;
-  border-left: 3px solid var(--primary-color);
+  border-left: 3px solid #1976d2;
   transition: all 0.2s;
 }
 
 .keyword-document:hover {
   background-color: rgba(255, 255, 255, 1);
   transform: translateX(4px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.2);
   border-left-width: 4px;
 }
 
 .doc-name {
   font-weight: 600;
-  color: var(--primary-color);
+  color: #1976d2;
   margin-bottom: 0.4rem;
   font-size: 0.9rem;
 }
@@ -236,7 +243,8 @@
 }
 
 .chat-input:focus {
-  border-color: var(--primary-color);
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 
 .chat-input:disabled {
@@ -246,36 +254,42 @@
 
 .send-button {
   padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  background: linear-gradient(135deg, #1976d2, #1565c0);
   color: white;
   border: none;
   border-radius: 24px;
   font-size: 1.25rem;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
 }
 
 .send-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  background: linear-gradient(135deg, #1e88e5, #1976d2);
 }
 
 .send-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .example-queries {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   background-color: #f8f9fa;
   border-top: 1px solid var(--border-color);
 }
 
 .example-title {
-  font-size: 0.875rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
 }
 
 .example-buttons {
@@ -285,21 +299,22 @@
 }
 
 .example-button {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.75rem;
   background-color: white;
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  font-size: 0.875rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
   color: var(--text-primary);
 }
 
 .example-button:hover:not(:disabled) {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #1976d2, #1565c0);
   color: white;
-  border-color: var(--primary-color);
+  border-color: #1976d2;
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
 }
 
 .example-button:disabled {
