@@ -1269,9 +1269,9 @@ function ChatInterface({ userRole, userId }) {
                                       handleDocumentClick(sources[0].document_name, sources[0].chunk_text);
                                     }}
                                     style={{
-                                      backgroundColor: '#f0f4ff',
-                                      color: '#2563eb',
-                                      border: '1px solid #dbeafe',
+                                      backgroundColor: '#e8eef8',
+                                      color: '#0B2265',
+                                      border: '1px solid #c5d0de',
                                       borderRadius: '6px',
                                       padding: '6px 14px',
                                       fontSize: '13px',
