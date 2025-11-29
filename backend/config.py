@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # Model Configuration
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
     embedding_dimension: int = 384
-    openai_model: str = "gpt-5-mini"
+    openai_model: str = "gpt-4o-mini"
 
     # RAG Configuration
     top_k_results: int = 5

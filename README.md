@@ -13,7 +13,7 @@ Virtual assistant for University Hospital Brno (FN Brno) - A RAG-based chatbot t
 This project was created as a PoC (Proof of Concept) for a hackathon. The system uses:
 - **RAG (Retrieval-Augmented Generation)** for answering employee questions
 - **InterSystems IRIS Vector Search** as the vector database
-- **OpenAI GPT-5-mini** for response generation
+- **OpenAI API** for response generation
 - **FastAPI** backend with **React** frontend
 
 ## Architecture
@@ -109,7 +109,7 @@ Uses Pydantic Settings for type-safe configuration management:
 **Configuration Groups:**
 - **IRIS Database**: Connection parameters (host, port, namespace, credentials)
 - **Embedding Model**: Model name and dimension (paraphrase-multilingual-MiniLM-L12-v2, 384D)
-- **OpenAI**: API key and model name (gpt-5-mini)
+- **OpenAI**: API key and model name (eg gpt-5-mini)
 - **RAG Parameters**: Top K results (5), minimum relevance score (0.0)
 
 #### Data Ingestion Pipeline
@@ -184,18 +184,13 @@ Obsah: [chunk text]
 
 The `ResponseGenerator` class handles the generation phase:
 
-1. **System Prompt**: Instructs GPT-5-mini to act as FN Brno assistant
+1. **System Prompt**: Instructs the model to act as FN Brno assistant
 2. **Context Injection**: Provides retrieved chunks as context
-3. **Response Generation**: Calls OpenAI API with temperature 0.3
+3. **Response Generation**: Calls OpenAI API
 4. **Czech Language**: All prompts and responses in Czech
 
 **System Prompt (translated):**
 > "You are a virtual assistant for University Hospital Brno (FN Brno). Your task is to help employees navigate internal processes and organizational structure. Answer in Czech language based ONLY on the provided context. If information is not in the context, say you don't know."
-
-**Temperature Setting (0.3):**
-- Low temperature for factual, consistent responses
-- Reduces hallucination risk
-- Maintains focus on provided context
 
 #### Data Models (`backend/models/schemas.py`)
 
@@ -316,7 +311,7 @@ IRIS Database (HNSW index)
     ↓ Top 5 chunks
 ResponseGenerator
     ↓ Context + Prompt
-OpenAI GPT-5-mini
+OpenAI API
     ↓ Czech answer
 Backend (JSON response)
     ↓
@@ -340,8 +335,8 @@ User sees answer + sources
 - Better semantic understanding of mixed content
 - Paraphrase-MiniLM trained on 50+ languages
 
-**Why GPT-5-mini?**
-- Latest generation model with improved reasoning
+**Why OpenAI?**
+- High-quality language models with strong reasoning capabilities
 - Cost-effective and fast response times
 - High quality for retrieval-based QA
 - Excellent Czech language support
@@ -559,7 +554,7 @@ Frontend runs at `http://localhost:3000`
 3. The system:
    - Converts question to embedding
    - Finds relevant documents in IRIS database
-   - Provides context to OpenAI models
+   - Provides context to OpenAI API
    - Generates answer in Czech
    - Displays information sources
 
@@ -575,25 +570,18 @@ Frontend runs at `http://localhost:3000`
 ### Backend (`backend/.env`)
 
 ```env
-# OpenAI
+# Secrets
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-5-mini
 
-# IRIS Database
+# IRIS Database (environment-specific)
 IRIS_HOST=localhost
 IRIS_PORT=1972
 IRIS_NAMESPACE=USER
 IRIS_USERNAME=_SYSTEM
 IRIS_PASSWORD=SYS
-
-# Embedding Model
-EMBEDDING_MODEL=paraphrase-multilingual-MiniLM-L12-v2
-EMBEDDING_DIMENSION=384
-
-# RAG Parameters
-TOP_K_RESULTS=5
-MIN_RELEVANCE_SCORE=0.5
 ```
+
+**Note:** Application configuration (model selection, RAG parameters, etc.) should be changed in `backend/config.py`, not in `.env`.
 
 ### Frontend
 
