@@ -15,11 +15,11 @@ class Settings(BaseSettings):
     # Model Configuration
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
     embedding_dimension: int = 384
-    openai_model: str = "gpt-4-turbo-preview"
+    openai_model: str = "gpt-5-mini"
 
     # RAG Configuration
     top_k_results: int = 5
-    min_relevance_score: float = 0.5
+    min_relevance_score: float = 0.0
 
     class Config:
         env_file = ".env"
