@@ -1,0 +1,1 @@
+To get started with the Tutorial, go to [0-FHIR-server-setup.md](./0-FHIR-server-setup.md).
