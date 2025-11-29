@@ -1293,10 +1293,39 @@ function ChatInterface({ userRole, userId }) {
                                       e.target.style.borderColor = '#c5d0de';
                                     }}
                                   >
-                                    {sources.length > 1 ? `Úseky 1-${sources.length}` : 'Úsek 1'}
+                                    Stáhnout
                                   </button>
                                 ) : (
-                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const downloadUrl = `${API_URL}/download/${sources[0].document_name}`;
+                                        window.open(downloadUrl, '_blank');
+                                      }}
+                                      style={{
+                                        backgroundColor: '#e8eef8',
+                                        color: '#0B2265',
+                                        border: '1px solid #c5d0de',
+                                        borderRadius: '6px',
+                                        padding: '6px 14px',
+                                        fontSize: '13px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        whiteSpace: 'nowrap',
+                                        transition: 'all 0.2s'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.target.style.backgroundColor = '#d4dcec';
+                                        e.target.style.borderColor = '#1a3378';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.target.style.backgroundColor = '#e8eef8';
+                                        e.target.style.borderColor = '#c5d0de';
+                                      }}
+                                    >
+                                      Stáhnout
+                                    </button>
                                     {sources.map((source, idx) => (
                                       <button
                                         key={idx}
