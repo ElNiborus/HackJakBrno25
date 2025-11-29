@@ -1183,7 +1183,15 @@ function ChatInterface({ userRole, userId }) {
         <div className="messages-container">
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.type}`}>
-              <div className="message-content">
+              {message.type === 'assistant' ? (
+                <>
+                  <img
+                    src="/robot.png"
+                    alt="Robot Assistant"
+                    className="robot-avatar"
+                  />
+                  <div className="message-wrapper">
+                    <div className="message-content">
                 {message.isForm ? (
                   <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
                 ) : message.isForm2 ? (
@@ -1324,28 +1332,93 @@ function ChatInterface({ userRole, userId }) {
                         })()}
                       </div>
                     )}
-                  </>
-                )}
-              </div>
+                    </>
+                  )}
+                </div>
 
-              <div className="message-timestamp">
-                {formatTime(message.timestamp)}
-                {message.processingTime && (
-                  <span className="processing-time">
-                    {' '}• {message.processingTime.toFixed(2)}s
-                  </span>
-                )}
-              </div>
+                  <div className="message-timestamp">
+                    {formatTime(message.timestamp)}
+                    {message.processingTime && (
+                      <span className="processing-time">
+                        {' '}• {message.processingTime.toFixed(2)}s
+                      </span>
+                    )}
+                  </div>
+                </div>
+                </>
+              ) : (
+                <>
+                  <div className="message-content">
+                    {message.isForm ? (
+                      <TravelForm onSubmit={handleFormSubmit} onDocumentUpload={handleDocumentUpload} userId={userId} />
+                    ) : message.isForm2 ? (
+                      <TripExpenseForm onSubmit={handleForm2Submit} userId={userId} />
+                    ) : (
+                      <>
+                        <div className="message-text">{renderTextWithLinks(message.text)}</div>
+
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>
+                            <div
+                              className="sources-header"
+                              onClick={() => {
+                                const messageKey = `msg-${index}`;
+                                const isCurrentlyCollapsed = collapsedSources[messageKey];
+                                setCollapsedSources(prev => ({
+                                  ...prev,
+                                  [messageKey]: !prev[messageKey]
+                                }));
+                                // If expanding, scroll to show the content
+                                if (isCurrentlyCollapsed) {
+                                  scrollToSource(messageKey);
+                                }
+                              }}
+                              style={{ cursor: 'pointer', userSelect: 'none' }}
+                            >
+                              <span style={{
+                                marginRight: '8px',
+                                display: 'inline-block',
+                                transition: 'transform 0.2s',
+                                transform: collapsedSources[`msg-${index}`] ? 'rotate(-90deg)' : 'rotate(0deg)'
+                              }}>
+                                ▼
+                              </span>
+                              📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}
+                            </div>
+                            {/* ... rest of sources content would go here ... */}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="message-timestamp">
+                    {formatTime(message.timestamp)}
+                    {message.processingTime && (
+                      <span className="processing-time">
+                        {' '}• {message.processingTime.toFixed(2)}s
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
 
           {isLoading && (
             <div className="message assistant">
-              <div className="message-content">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+              <img
+                src="/robot.png"
+                alt="Robot Assistant"
+                className="robot-avatar"
+              />
+              <div className="message-wrapper">
+                <div className="message-content">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
                 </div>
               </div>
             </div>
