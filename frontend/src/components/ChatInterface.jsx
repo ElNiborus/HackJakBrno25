@@ -963,23 +963,28 @@ function ChatInterface({ userRole, userId }) {
 
     // Only show thank you if not Osobní auto (document upload will be shown)
     if (formData.transport !== 'Osobní auto') {
-      const thankYouMessage = {
-        type: 'assistant',
-        text: messageText,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, thankYouMessage])
+      // Add 0.5s delay before showing the response message
+      setTimeout(() => {
+        const thankYouMessage = {
+          type: 'assistant',
+          text: messageText,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, thankYouMessage])
+      }, 500)
     }
   }
 
   const handleDocumentUpload = (files) => {
-    // Handle document upload - thank the user
-    const thankYouMessage = {
-      type: 'assistant',
-      text: `Děkuji za nahrání dokumentů!\n\nNahrané soubory:\n- Pojištění vozidla: ${files.insurance?.name || 'Nenahrán'}\n- Řidičský průkaz: ${files.license?.name || 'Nenahrán'}\n\nVaše žádost o pracovní cestu byla úspěšně odeslána.`,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, thankYouMessage])
+    // Add 0.5s delay before showing the response message
+    setTimeout(() => {
+      const thankYouMessage = {
+        type: 'assistant',
+        text: `Děkuji za nahrání dokumentů!\n\nNahrané soubory:\n- Pojištění vozidla: ${files.insurance?.name || 'Nenahrán'}\n- Řidičský průkaz: ${files.license?.name || 'Nenahrán'}\n\nVaše žádost o pracovní cestu byla úspěšně odeslána.`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, thankYouMessage])
+    }, 500)
   }
 
   const handleForm2Submit = (formData) => {
@@ -1014,12 +1019,15 @@ function ChatInterface({ userRole, userId }) {
       ? `\n\nVybraná pracovní cesta:\n- Destinace: ${selectedTrip.destination}\n- Od: ${formatDate(selectedTrip.dateFrom)}\n- Do: ${formatDate(selectedTrip.dateTo)}\n- Dopravní prostředek: ${selectedTrip.transport}`
       : '\n\nChyba: Nebyla vybrána žádná pracovní cesta.'
 
-    const thankYouMessage = {
-      type: 'assistant',
-      text: `Děkuji za vyplnění formuláře pro vyúčtování pracovní cesty!${tripDetails}\n\nCelková částka výdajů: ${formatCurrency(formData.totalAmount)}\nPočet nahraných účtenek: ${formData.receipts.length}\n\nNahrané soubory:\n${receiptsList}\n\nVaše žádost o vyúčtování byla úspěšně odeslána ke schválení.`,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, thankYouMessage])
+    // Add 0.5s delay before showing the response message
+    setTimeout(() => {
+      const thankYouMessage = {
+        type: 'assistant',
+        text: `Děkuji za vyplnění formuláře pro vyúčtování pracovní cesty!${tripDetails}\n\nCelková částka výdajů: ${formatCurrency(formData.totalAmount)}\nPočet nahraných účtenek: ${formData.receipts.length}\n\nNahrané soubory:\n${receiptsList}\n\nVaše žádost o vyúčtování byla úspěšně odeslána ke schválení.`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, thankYouMessage])
+    }, 500)
   }
 
   const handleSubmit = async (e) => {
