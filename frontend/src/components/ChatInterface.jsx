@@ -14,8 +14,8 @@ function ChatInterface() {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [keywordResults, setKeywordResults] = useState([])
   const messagesEndRef = useRef(null)
+  const abortRef = useRef(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -25,9 +25,25 @@ function ChatInterface() {
     scrollToBottom()
   }, [messages])
 
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) {
+        try { abortRef.current.abort() } catch (e) { /* ignore */ }
+      }
+    }
+  }, [])
+
+  const formatTime = (dateLike) => {
+    const d = dateLike ? new Date(dateLike) : new Date()
+    try {
+      return d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })
+    } catch (e) {
+      return d.toISOString()
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!inputValue.trim() || isLoading) return
 
     const userMessage = {
@@ -41,120 +57,146 @@ function ChatInterface() {
     setInputValue('')
     setIsLoading(true)
 
-    console.log('[ChatInterface] Sending query:', query)
-    console.log('[ChatInterface] API URL:', API_URL)
     const startTime = Date.now()
+    const controller = new AbortController()
+    abortRef.current = controller
 
     try {
-      // Run semantic search (RAG)
-      console.log('[ChatInterface] Making POST request to /query...')
-      const ragResponse = await axios.post(`${API_URL}/query`, { query })
-      const elapsed = Date.now() - startTime
-      console.log(`[ChatInterface] Response received in ${elapsed}ms:`, ragResponse.data)
+      const ragResponse = await axios.post(
+        `${API_URL}/query`,
+        { query },
+        { signal: controller.signal, timeout: 30000 }
+      )
 
       const assistantMessage = {
         type: 'assistant',
-        text: ragResponse.data.answer,
-        sources: ragResponse.data.sources,
+        text: ragResponse.data.answer || 'Žádná odpověď od serveru.',
+        sources: Array.isArray(ragResponse.data.sources) ? ragResponse.data.sources : [],
         processingTime: ragResponse.data.processing_time,
-        timestamp: new Date()
+        timestamp: ragResponse.data.timestamp ? new Date(ragResponse.data.timestamp) : new Date()
       }
 
       setMessages(prev => [...prev, assistantMessage])
-      console.log('[ChatInterface] Message added to state')
-
     } catch (error) {
-      const elapsed = Date.now() - startTime
-      console.error(`[ChatInterface] Error after ${elapsed}ms:`, error)
-      console.error('[ChatInterface] Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        code: error.code
-      })
-
+      console.error('Chyba při dotazu:', error)
       const errorMessage = {
         type: 'assistant',
         text: 'Omlouvám se, nastala chyba při zpracování vaší otázky. Zkuste to prosím znovu.',
         isError: true,
         timestamp: new Date()
       }
-
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
-      console.log('[ChatInterface] Loading state set to false')
+      abortRef.current = null
     }
   }
 
-  const handleDocumentClick = (documentName) => {
-    // Download/open the document
-    window.open(`${API_URL}/download/${documentName}`, '_blank')
-  }
+  const handleDocumentClick = async (documentName) => {
+    if (!documentName) return
+    const safeName = encodeURIComponent(documentName)
+    const url = `${API_URL}/download/${safeName}`
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })
+    try {
+      const response = await axios.get(url, {
+        responseType: 'blob',
+        timeout: 30000
+      })
+
+      const blob = new Blob([response.data])
+      const blobUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = documentName
+      a.rel = 'noopener'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000)
+    } catch (err) {
+      console.error('Chyba při stahování dokumentu', err)
+      try {
+        window.open(`${API_URL}/download/${safeName}`, '_blank', 'noopener')
+      } catch (e) {
+        console.error('Fallback open failed', e)
+      }
+    }
   }
 
   return (
     <div className="chat-interface">
       <div className="chat-container">
         <div className="messages-container">
-          {messages.map((message, index) => (
-            <div key={index} className={`message ${message.type}`}>
-              <div className="message-content">
-                <div className="message-text">{message.text}</div>
+          {messages.map((message, index) => {
+            const key = (message.id ? message.id : `${new Date(message.timestamp).getTime() || index}`) + `-${index}`
+            const sources = Array.isArray(message.sources) ? message.sources : []
 
-                {message.sources && message.sources.length > 0 && (
-                  <div className="sources-section">
-                    <div className="sources-header">📚 Zdroje informací:</div>
-                    {message.sources.map((source, idx) => (
-                      <div
-                        key={idx}
-                        className="source-item"
-                        onClick={() => handleDocumentClick(source.document_name)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <div className="source-name">
-                          {source.document_name}
-                          <span className="relevance-score">
-                            ({(source.relevance_score * 100).toFixed(0)}% shoda)
-                          </span>
-                        </div>
-                        {source.metadata?.department && (
-                          <div className="source-metadata">
-                            📍 Oddělení: {source.metadata.department}
-                          </div>
-                        )}
-                        {source.metadata?.process_owner && (
-                          <div className="source-metadata">
-                            👤 Vlastník procesu: {source.metadata.process_owner}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+            // === Deduplikace podle document_name (ponechat první výskyt) ===
+            const uniqueMap = new Map()
+            sources.forEach((s) => {
+              // klíč: preferuj document_name, fallback na url nebo na stringified obsah
+              const nameKey = s?.document_name ?? s?.url ?? JSON.stringify(s)
+              if (!uniqueMap.has(nameKey)) uniqueMap.set(nameKey, s)
+            })
+            const uniqueSources = Array.from(uniqueMap.values())
+            // ============================================================
 
-                <div className="message-timestamp">
-                  {formatTime(message.timestamp)}
-                  {message.processingTime && (
-                    <span className="processing-time">
-                      {' '}• {message.processingTime.toFixed(2)}s
-                    </span>
+            return (
+              <div key={key} className={`message ${message.type}`}>
+                <div className="message-content">
+                  <div className="message-text">{message.text}</div>
+
+                  {uniqueSources.length > 0 && (
+                    <div className="sources-section">
+                      <div className="sources-header">📚 Zdroje informací:</div>
+                      {uniqueSources.map((source, idx) => {
+                        const docName = source.document_name ?? source.url ?? `zdroj-${idx}`
+                        return (
+                          <div
+                            key={`${docName}-${idx}`}
+                            className="source-item"
+                            onClick={() => handleDocumentClick(docName)}
+                            style={{ cursor: 'pointer' }}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleDocumentClick(docName) }}
+                          >
+                            <div className="source-name">
+                              {docName}
+                              {typeof source.relevance_score === 'number' && (
+                                <span className="relevance-score">
+                                  {' '}({(source.relevance_score * 100).toFixed(0)}% shoda)
+                                </span>
+                              )}
+                            </div>
+                            {source.metadata?.department && (
+                              <div className="source-metadata">📍 Oddělení: {source.metadata.department}</div>
+                            )}
+                            {source.metadata?.process_owner && (
+                              <div className="source-metadata">👤 Vlastník procesu: {source.metadata.process_owner}</div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
+
+                  <div className="message-timestamp">
+                    {formatTime(message.timestamp)}
+                    {message.processingTime != null && !isNaN(message.processingTime) && (
+                      <span className="processing-time"> {' '}• {Number(message.processingTime).toFixed(2)}s</span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           {isLoading && (
             <div className="message assistant">
               <div className="message-content">
                 <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+                  <span></span><span></span><span></span>
                 </div>
               </div>
             </div>
@@ -171,11 +213,13 @@ function ChatInterface() {
             placeholder="Napište svou otázku..."
             disabled={isLoading}
             className="chat-input"
+            aria-label="Zadejte dotaz"
           />
           <button
             type="submit"
             disabled={isLoading || !inputValue.trim()}
             className="send-button"
+            aria-label="Odeslat"
           >
             {isLoading ? '⏳' : '📤'}
           </button>
