@@ -65,6 +65,7 @@ function ChatInterface({ userRole, userId }) {
   const messagesEndRef = useRef(null)
   const recognitionRef = useRef(null)
   const pdfCanvasRef = useRef(null)
+  const interimTranscriptRef = useRef('')
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -82,13 +83,21 @@ function ChatInterface({ userRole, userId }) {
       const recognition = new SpeechRecognition()
       recognition.continuous = false
       recognition.lang = 'cs-CZ' // Czech language
-      recognition.interimResults = false
+      recognition.interimResults = true
       recognition.maxAlternatives = 1
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript
-        setInputValue(transcript)
-        setIsListening(false)
+        let transcript = ''
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript
+        }
+        interimTranscriptRef.current = transcript
+
+        // Only set final results to input
+        if (event.results[event.results.length - 1].isFinal) {
+          setInputValue(transcript)
+          setIsListening(false)
+        }
       }
 
       recognition.onerror = (event) => {
@@ -97,6 +106,11 @@ function ChatInterface({ userRole, userId }) {
       }
 
       recognition.onend = () => {
+        // If we have interim transcript when ending, save it to input
+        if (interimTranscriptRef.current) {
+          setInputValue(interimTranscriptRef.current)
+          interimTranscriptRef.current = ''
+        }
         setIsListening(false)
       }
 
