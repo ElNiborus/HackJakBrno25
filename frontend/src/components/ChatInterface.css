@@ -101,11 +101,19 @@
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 6px;
   font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.source-item:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .source-name {
   font-weight: 500;
   margin-bottom: 0.25rem;
+  color: var(--primary-color);
 }
 
 .relevance-score {
@@ -118,6 +126,62 @@
   font-size: 0.8rem;
   opacity: 0.8;
   margin-top: 0.25rem;
+}
+
+/* Keyword search results styling */
+.keyword-results-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.keyword-header {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--primary-dark);
+}
+
+.keyword-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.keyword-document {
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-color);
+  transition: all 0.2s;
+}
+
+.keyword-document:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: translateX(4px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  border-left-width: 4px;
+}
+
+.doc-name {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.doc-meta {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-bottom: 0.4rem;
+}
+
+.doc-preview {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  font-style: italic;
 }
 
 .typing-indicator {
