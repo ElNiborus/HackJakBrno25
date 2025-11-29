@@ -1427,6 +1427,35 @@ function ChatInterface({ userRole, userId }) {
           <div ref={messagesEndRef} />
         </div>
 
+        {!messages.some(m => m.type === 'user') && (
+          <div className="example-queries">
+            <p className="example-title">💡 Příklady otázek:</p>
+            <div className="example-buttons">
+              <button
+                onClick={() => setInputValue('Co mám dělat, když si chci koupit nový mobil?')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Nákup mobilu
+              </button>
+              <button
+                onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Pracovní cesta
+              </button>
+              <button
+                onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Procesy CI
+              </button>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="input-container">
           <button
             type="button"
@@ -1460,35 +1489,6 @@ function ChatInterface({ userRole, userId }) {
             )}
           </button>
         </form>
-
-        {!messages.some(m => m.type === 'user') && (
-          <div className="example-queries">
-            <p className="example-title">💡 Příklady otázek:</p>
-            <div className="example-buttons">
-              <button
-                onClick={() => setInputValue('Co mám dělat, když si chci koupit nový mobil?')}
-                className="example-button"
-                disabled={isLoading}
-              >
-                Nákup mobilu
-              </button>
-              <button
-                onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
-                className="example-button"
-                disabled={isLoading}
-              >
-                Pracovní cesta
-              </button>
-              <button
-                onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
-                className="example-button"
-                disabled={isLoading}
-              >
-                Procesy CI
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* PDF Sidebar */}
