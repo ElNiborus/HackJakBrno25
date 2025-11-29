@@ -1,7 +1,7 @@
 #python 3.12
 fastapi
 uvicorn[standard]
-openai
+openai>=2.0.0
 pydantic
 pydantic-settings
 python-dotenv
