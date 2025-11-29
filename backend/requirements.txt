@@ -22,4 +22,12 @@ pydantic
 pydantic-settings
 python-dotenv
 requests
+<<<<<<< HEAD
 >>>>>>> bc57fec (Specify Python 3.12 in requirements.txt)
+=======
+intersystems-irispython
+numpy
+python-docx
+openpyxl
+pandas
+>>>>>>> 2623717 (Added  correct requirements, deleted redundant scripts)
