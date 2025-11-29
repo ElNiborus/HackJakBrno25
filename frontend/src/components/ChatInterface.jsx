@@ -51,6 +51,7 @@ function DocumentUploadForm({ onSubmit }) {
             name="insurance"
             onChange={handleFileChange}
             required
+            disabled={isSubmitted}
             accept=".pdf,.jpg,.jpeg,.png"
             style={{
               width: '100%',
@@ -58,7 +59,8 @@ function DocumentUploadForm({ onSubmit }) {
               borderRadius: '4px',
               border: '1px solid #ced4da',
               fontSize: '14px',
-              backgroundColor: 'white'
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
             }}
           />
         </div>
@@ -77,6 +79,7 @@ function DocumentUploadForm({ onSubmit }) {
             name="license"
             onChange={handleFileChange}
             required
+            disabled={isSubmitted}
             accept=".pdf,.jpg,.jpeg,.png"
             style={{
               width: '100%',
@@ -84,7 +87,8 @@ function DocumentUploadForm({ onSubmit }) {
               borderRadius: '4px',
               border: '1px solid #ced4da',
               fontSize: '14px',
-              backgroundColor: 'white'
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
             }}
           />
         </div>
@@ -173,12 +177,15 @@ function TravelForm({ onSubmit, onDocumentUpload }) {
             value={formData.destination}
             onChange={handleChange}
             required
+            disabled={isSubmitted}
             style={{
               width: '100%',
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'text'
             }}
             placeholder="Například: Praha, Brno, ..."
           />
@@ -199,12 +206,15 @@ function TravelForm({ onSubmit, onDocumentUpload }) {
             value={formData.dateFrom}
             onChange={handleChange}
             required
+            disabled={isSubmitted}
             style={{
               width: '100%',
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
             }}
           />
         </div>
@@ -224,12 +234,15 @@ function TravelForm({ onSubmit, onDocumentUpload }) {
             value={formData.dateTo}
             onChange={handleChange}
             required
+            disabled={isSubmitted}
             style={{
               width: '100%',
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
             }}
           />
         </div>
@@ -248,13 +261,15 @@ function TravelForm({ onSubmit, onDocumentUpload }) {
             value={formData.transport}
             onChange={handleChange}
             required
+            disabled={isSubmitted}
             style={{
               width: '100%',
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
               fontSize: '14px',
-              backgroundColor: 'white'
+              backgroundColor: isSubmitted ? '#e9ecef' : 'white',
+              cursor: isSubmitted ? 'not-allowed' : 'pointer'
             }}
           >
             <option value="">Vyberte dopravní prostředek...</option>
