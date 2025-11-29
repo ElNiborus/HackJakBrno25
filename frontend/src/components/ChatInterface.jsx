@@ -55,7 +55,7 @@ function ChatInterface() {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [keywordResults, setKeywordResults] = useState([])
+  const [sessionId, setSessionId] = useState(null)
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -87,17 +87,28 @@ function ChatInterface() {
     const startTime = Date.now()
 
     try {
-      // Run semantic search (RAG)
-      console.log('[ChatInterface] Making POST request to /query...')
-      const ragResponse = await axios.post(`${API_URL}/query`, { query })
+      // Call chat endpoint with session tracking
+      console.log('[ChatInterface] Making POST request to /chat...')
+      const requestBody = { query }
+      if (sessionId) {
+        requestBody.session_id = sessionId
+      }
+
+      const chatResponse = await axios.post(`${API_URL}/chat`, requestBody)
       const elapsed = Date.now() - startTime
-      console.log(`[ChatInterface] Response received in ${elapsed}ms:`, ragResponse.data)
+      console.log(`[ChatInterface] Response received in ${elapsed}ms:`, chatResponse.data)
+
+      // Store session ID for subsequent requests
+      if (!sessionId) {
+        setSessionId(chatResponse.data.session_id)
+      }
 
       const assistantMessage = {
         type: 'assistant',
-        text: ragResponse.data.answer,
-        sources: ragResponse.data.sources,
-        processingTime: ragResponse.data.processing_time,
+        text: chatResponse.data.message.content,
+        sources: chatResponse.data.sources || [],
+        usedRag: chatResponse.data.used_rag,
+        processingTime: chatResponse.data.processing_time,
         timestamp: new Date()
       }
 
