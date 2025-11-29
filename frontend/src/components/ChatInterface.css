@@ -72,6 +72,28 @@
   word-wrap: break-word;
 }
 
+/* Link styling */
+.message-text a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.message-text a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.message.user .message-text a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.message.user .message-text a:hover {
+  color: #e0e0e0;
+}
+
 .message-timestamp {
   font-size: 0.75rem;
   opacity: 0.7;
