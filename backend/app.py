@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import logging
 import time
+import os
+from pathlib import Path
 
 from models.schemas import QueryRequest, QueryResponse
 from iris_db import IRISVectorDB
@@ -167,6 +170,39 @@ async def get_stats():
         }
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/download/{filename}")
+async def download_file(filename: str):
+    """
+    Download a document file.
+
+    Args:
+        filename: Name of the file to download
+
+    Returns:
+        File response
+    """
+    try:
+        # Get raw_data directory
+        base_dir = Path(__file__).parent.parent / "raw_data"
+
+        # Search for file in subdirectories
+        for root, dirs, files in os.walk(base_dir):
+            if filename in files:
+                file_path = os.path.join(root, filename)
+                logger.info(f"Serving file: {file_path}")
+                return FileResponse(
+                    file_path,
+                    filename=filename,
+                    media_type="application/octet-stream"
+                )
+
+        raise HTTPException(status_code=404, detail=f"File not found: {filename}")
+
+    except Exception as e:
+        logger.error(f"Error downloading file: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

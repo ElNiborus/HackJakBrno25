@@ -14,6 +14,7 @@ function ChatInterface() {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [keywordResults, setKeywordResults] = useState([])
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -36,19 +37,19 @@ function ChatInterface() {
     }
 
     setMessages(prev => [...prev, userMessage])
+    const query = inputValue
     setInputValue('')
     setIsLoading(true)
 
     try {
-      const response = await axios.post(`${API_URL}/query`, {
-        query: inputValue
-      })
+      // Run semantic search (RAG)
+      const ragResponse = await axios.post(`${API_URL}/query`, { query })
 
       const assistantMessage = {
         type: 'assistant',
-        text: response.data.answer,
-        sources: response.data.sources,
-        processingTime: response.data.processing_time,
+        text: ragResponse.data.answer,
+        sources: ragResponse.data.sources,
+        processingTime: ragResponse.data.processing_time,
         timestamp: new Date()
       }
 
@@ -70,6 +71,11 @@ function ChatInterface() {
     }
   }
 
+  const handleDocumentClick = (documentName) => {
+    // Download/open the document
+    window.open(`${API_URL}/download/${documentName}`, '_blank')
+  }
+
   const formatTime = (date) => {
     return date.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })
   }
@@ -87,7 +93,12 @@ function ChatInterface() {
                   <div className="sources-section">
                     <div className="sources-header">📚 Zdroje informací:</div>
                     {message.sources.map((source, idx) => (
-                      <div key={idx} className="source-item">
+                      <div
+                        key={idx}
+                        className="source-item"
+                        onClick={() => handleDocumentClick(source.document_name)}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <div className="source-name">
                           {source.document_name}
                           <span className="relevance-score">
@@ -170,6 +181,13 @@ function ChatInterface() {
               disabled={isLoading}
             >
               Pracovní cesta
+            </button>
+            <button
+              onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
+              className="example-button"
+              disabled={isLoading}
+            >
+              Procesy CI
             </button>
           </div>
         </div>
