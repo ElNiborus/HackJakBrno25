@@ -1,6 +1,22 @@
 from pydantic import BaseModel
 from typing import List, Optional, Literal
 from datetime import datetime
+from enum import Enum
+
+
+# Intent classification and action types
+class IntentCategory(str, Enum):
+    """User intent classification categories"""
+    GENERAL_RAG = "general_rag"
+    CONVERSATIONAL = "conversational"
+    TRIP_REQUEST = "trip_request"
+    TRIP_EXPENSE = "trip_expense"
+
+
+class ActionType(str, Enum):
+    """Actions to trigger in frontend"""
+    SHOW_TRIP_FORM = "show_trip_form"
+    SHOW_EXPENSE_FORM = "show_expense_form"
 
 
 class QueryRequest(BaseModel):
@@ -51,3 +67,4 @@ class ChatResponse(BaseModel):
     used_rag: bool  # Whether RAG retrieval was used
     sources: List[SourceReference]  # Empty if used_rag=False
     processing_time: float
+    action_type: Optional[ActionType] = None  # Optional action to trigger in frontend
