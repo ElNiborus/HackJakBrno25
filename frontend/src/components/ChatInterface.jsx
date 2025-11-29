@@ -373,8 +373,8 @@ function TripExpenseForm({ onSubmit, userId }) {
               required
               disabled={isSubmitted}
               min="0"
-              step="0.01"
-              placeholder="0.00"
+              step="1"
+              placeholder="0"
               style={{
                 width: '100%',
                 padding: '8px 12px',
@@ -383,12 +383,12 @@ function TripExpenseForm({ onSubmit, userId }) {
                 fontSize: '14px',
                 backgroundColor: isSubmitted ? '#e9ecef' : 'white',
                 cursor: isSubmitted ? 'not-allowed' : 'text',
-                paddingRight: '35px'
+                paddingRight: '50px'
               }}
             />
             <span style={{
               position: 'absolute',
-              right: '12px',
+              right: '35px',
               fontSize: '14px',
               color: '#666',
               pointerEvents: 'none'
