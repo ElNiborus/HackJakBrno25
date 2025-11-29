@@ -565,9 +565,9 @@
   background-color: rgba(11, 34, 101, 0.08);
   color: #0B2265;
   border: 1px solid rgba(11, 34, 101, 0.2);
-  border-radius: 5px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.025em;
   cursor: pointer;
@@ -578,10 +578,12 @@
   width: 100%;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=utf-8,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%230B2265' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 0.5rem center;
+  background-position: right 12px center;
   background-repeat: no-repeat;
   background-size: 1em 1em;
-  padding-right: 2rem;
+  padding-right: 2.5rem;
+  height: auto;
+  min-height: 38px;
 }
 
 /* Form Container Width Consistency */
@@ -599,6 +601,20 @@
   max-width: 100%;
 }
 
+/* Form Input Height Consistency */
+.form-container input[type="text"],
+.form-container input[type="date"],
+.form-container input[type="number"] {
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  border: 1px solid #ced4da !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
 /* File Input Styling */
 .form-container input[type="file"] {
   width: 100% !important;
@@ -606,6 +622,8 @@
   box-sizing: border-box !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  min-height: 38px;
+  height: auto;
 }
 
 .form-select:hover {
