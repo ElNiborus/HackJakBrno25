@@ -196,6 +196,14 @@ async def chat(request: ChatRequest):
     start_time = time.time()
 
     try:
+        # Log incoming request
+        logger.info("\n" + "=" * 80)
+        logger.info("INCOMING CHAT REQUEST")
+        logger.info("=" * 80)
+        logger.info(f"Query: {request.query}")
+        logger.info(f"Session ID: {request.session_id if request.session_id else 'None (new session)'}")
+        logger.info("=" * 80 + "\n")
+
         # Get or create session
         if request.session_id and session_manager.session_exists(request.session_id):
             session_id = request.session_id
@@ -216,7 +224,6 @@ async def chat(request: ChatRequest):
 
         # Decide whether to use RAG
         needs_rag = rag_router.should_use_rag(request.query, history)
-        logger.info(f"RAG routing decision: needs_rag={needs_rag}")
 
         # Retrieve context if needed
         sources = []
@@ -259,7 +266,17 @@ async def chat(request: ChatRequest):
         session_manager.add_message(session_id, assistant_message)
 
         processing_time = time.time() - start_time
-        logger.info(f"Chat processed in {processing_time:.2f}s")
+
+        # Log final response
+        logger.info("\n" + "=" * 80)
+        logger.info("CHAT RESPONSE")
+        logger.info("=" * 80)
+        logger.info(f"Session ID: {session_id}")
+        logger.info(f"Used RAG: {needs_rag}")
+        logger.info(f"Number of sources: {len(sources)}")
+        logger.info(f"Processing time: {processing_time:.2f}s")
+        logger.info(f"Assistant Response:\n{answer}")
+        logger.info("=" * 80 + "\n")
 
         return ChatResponse(
             session_id=session_id,
