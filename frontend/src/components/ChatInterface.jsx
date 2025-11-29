@@ -96,8 +96,7 @@ function TravelForm({ onSubmit }) {
           }}>
             Dopravní prostředek:
           </label>
-          <input
-            type="text"
+          <select
             name="transport"
             value={formData.transport}
             onChange={handleChange}
@@ -107,10 +106,15 @@ function TravelForm({ onSubmit }) {
               padding: '8px 12px',
               borderRadius: '4px',
               border: '1px solid #ced4da',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: 'white'
             }}
-            placeholder="Například: autem, vlakem, letadlem, ..."
-          />
+          >
+            <option value="">Vyberte dopravní prostředek...</option>
+            <option value="Veřejná doprava">Veřejná doprava</option>
+            <option value="Osobní auto">Osobní auto</option>
+            <option value="Firemní auto">Firemní auto</option>
+          </select>
         </div>
 
         <button
