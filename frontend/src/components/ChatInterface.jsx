@@ -705,7 +705,7 @@ function renderTextWithLinks(text) {
   return parts.length > 0 ? parts : text
 }
 
-function ChatInterface({ userRole, userId }) {
+function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
   const [messages, setMessages] = useState([
     {
       type: 'assistant',
@@ -715,7 +715,7 @@ function ChatInterface({ userRole, userId }) {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [sessionId, setSessionId] = useState(null)
+  const [sessionId, setSessionId] = useState(userSessionId || null)
   const [isListening, setIsListening] = useState(false)
   const [keywordResults, setKeywordResults] = useState([])
   const [pdfSidebarOpen, setPdfSidebarOpen] = useState(false)
