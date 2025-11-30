@@ -7,7 +7,9 @@ import time
 import os
 from pathlib import Path
 
-from models.schemas import QueryRequest, QueryResponse, ChatRequest, ChatResponse, Message, IntentCategory, ActionType, UserInfo, UsersConfig
+from models.schemas import (QueryRequest, QueryResponse, ChatRequest, ChatResponse, Message, 
+                            IntentCategory, ActionType, UserInfo, UsersConfig, LoginRequest, 
+                            LoginResponse, SessionCheckResponse)
 from iris_db import IRISVectorDB
 from ingestion.embedder import EmbeddingGenerator
 from rag.retriever import VectorRetriever
@@ -425,6 +427,112 @@ async def view_pdf(filename: str):
 
     except Exception as e:
         logger.error(f"Error viewing PDF: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/auth/login", response_model=LoginResponse)
+async def login(request: LoginRequest):
+    """Authenticate user and create session.
+
+    Args:
+        request: Login request with email and code
+
+    Returns:
+        LoginResponse with session ID and user info
+    """
+    try:
+        # Validate email format
+        if not request.email.endswith('@fnbrno.cz'):
+            raise HTTPException(status_code=400, detail="Email must end with @fnbrno.cz")
+
+        # Extract username from email
+        email_username = request.email.split('@')[0].lower()
+
+        # Validate code matches username
+        if request.code.lower() != email_username:
+            raise HTTPException(status_code=401, detail="Invalid login code")
+
+        # Map email usernames to user IDs
+        user_mapping = {
+            'anna': {'user_id': 1, 'name': 'Anna Konecna', 'role': 'nurse'},
+            'anna.konecna': {'user_id': 1, 'name': 'Anna Konecna', 'role': 'nurse'},
+            'marek': {'user_id': 2, 'name': 'Marek Dvorak', 'role': 'manager'},
+            'marek.dvorak': {'user_id': 2, 'name': 'Marek Dvorak', 'role': 'manager'},
+            'petr': {'user_id': 3, 'name': 'Petr Svoboda', 'role': 'maintenance'},
+            'petr.svoboda': {'user_id': 3, 'name': 'Petr Svoboda', 'role': 'maintenance'}
+        }
+
+        user_data = user_mapping.get(email_username)
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found in system")
+
+        # Create user session
+        session_id = session_manager.create_user_session(
+            user_id=user_data['user_id'],
+            name=user_data['name'],
+            role=user_data['role']
+        )
+
+        logger.info(f"User {user_data['name']} logged in with session {session_id}")
+
+        return LoginResponse(
+            session_id=session_id,
+            user_id=user_data['user_id'],
+            name=user_data['name'],
+            role=user_data['role'],
+            message="Login successful"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error during login: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/auth/logout")
+async def logout(session_id: str):
+    """Logout user and invalidate session.
+
+    Args:
+        session_id: Session ID to invalidate
+
+    Returns:
+        Success message
+    """
+    try:
+        session_manager.invalidate_session(session_id)
+        return {"message": "Logout successful", "session_id": session_id}
+    except Exception as e:
+        logger.error(f"Error during logout: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/auth/session/{session_id}", response_model=SessionCheckResponse)
+async def check_session(session_id: str):
+    """Check if session is valid and return user info.
+
+    Args:
+        session_id: Session ID to check
+
+    Returns:
+        SessionCheckResponse with validity and user info
+    """
+    try:
+        user_session = session_manager.get_user_session(session_id)
+        
+        if user_session:
+            return SessionCheckResponse(
+                valid=True,
+                user_id=user_session['user_id'],
+                name=user_session['name'],
+                role=user_session['role']
+            )
+        else:
+            return SessionCheckResponse(valid=False)
+
+    except Exception as e:
+        logger.error(f"Error checking session: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

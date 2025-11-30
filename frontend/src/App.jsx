@@ -1,17 +1,37 @@
 import { useState } from 'react'
 import ChatInterface from './components/ChatInterface'
+import LoginForm from './components/LoginForm'
 import './App.css'
 import logo from '../Resources/logo_nemocnice_bile.png'
 
-const users = [
-  { userId: 1, name: 'Anna', role: 'Sestřička' },
-  { userId: 2, name: 'Marek', role: 'Vedoucí oddělení' },
-  { userId: 3, name: 'Petr', role: 'Údržbář' }
-]
+const roleDisplayNames = {
+  'nurse': 'Sestřička',
+  'manager': 'Vedoucí oddělení',
+  'maintenance': 'Údržbář'
+}
 
 function App() {
-  const [selectedUserId, setSelectedUserId] = useState(1)
-  const selectedUser = users.find(u => u.userId === selectedUserId)
+  // Default to Anna logged in
+  const [currentUser, setCurrentUser] = useState({
+    userId: 1,
+    name: 'Anna Konecna',
+    role: 'nurse'
+  })
+
+  const handleLogin = (userData) => {
+    setCurrentUser(userData)
+  }
+
+  const handleLogout = () => {
+    setCurrentUser(null)
+  }
+
+  // If not logged in, show login form
+  if (!currentUser) {
+    return <LoginForm onLogin={handleLogin} />
+  }
+
+  const roleDisplay = roleDisplayNames[currentUser.role] || currentUser.role
 
   return (
     <div className="App">
@@ -25,24 +45,35 @@ function App() {
               <h1>Virtuální asistent</h1>
               <p className="subtitle">Instituční průvodce strukturou a procesy nemocnice</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <select
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(Number(e.target.value))}
-                className="role-selector"
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ color: 'white', fontSize: '14px' }}>
+                <strong>{currentUser.name}</strong> ({roleDisplay})
+              </span>
+              <button
+                onClick={handleLogout}
+                className="logout-button"
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
               >
-                {users.map(user => (
-                  <option key={user.userId} value={user.userId}>
-                    {user.name} ({user.role})
-                  </option>
-                ))}
-              </select>
+                Odhlásit se
+              </button>
             </div>
           </div>
         </div>
       </header>
       <main className="app-main">
-        <ChatInterface userRole={selectedUser.role} userId={selectedUser.userId} />
+        <ChatInterface userRole={currentUser.role} userId={currentUser.userId} />
       </main>
       <footer className="app-footer">
         <p>Fakultní nemocnice Brno - Interní nástroj pro zaměstnance</p>
