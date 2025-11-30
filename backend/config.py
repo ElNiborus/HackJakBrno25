@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # Model Configuration
     embedding_model: str = "text-embedding-3-large"
     embedding_dimension: int = 3072
-    openai_model: str = "gpt-5-mini"
+    openai_model: str = "gpt-5"
 
     # RAG Configuration
     top_k_results: int = 10
@@ -23,8 +23,14 @@ class Settings(BaseSettings):
 
     # Conversation Configuration
     max_history_messages: int = 10
-    router_model: str = "gpt-5-mini"
+    router_model: str = "gpt-5"
     router_reasoning_effort: str = "minimal"
+
+    # FHIR Configuration
+    fhir_base_url: str = "http://localhost:32783"
+    fhir_patient_endpoint: str = "/csp/healthshare/demo/fhir/r4/Patient"
+    fhir_timeout: int = 30
+    fhir_max_results: int = 50
 
     class Config:
         env_file = ".env"

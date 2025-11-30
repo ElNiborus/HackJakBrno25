@@ -16,6 +16,8 @@ from conversation.session_manager import SessionManager
 from rag.router import RAGRouter
 from config import get_settings
 from datetime import datetime
+from fhir.client import FHIRClient
+from fhir.executor import FHIRToolExecutor
 
 # Configure logging
 logging.basicConfig(
@@ -31,12 +33,14 @@ retriever = None
 generator = None
 session_manager = None
 rag_router = None
+fhir_client = None
+fhir_tool_executor = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    global db, embedder, retriever, generator, session_manager, rag_router
+    global db, embedder, retriever, generator, session_manager, rag_router, fhir_client, fhir_tool_executor
 
     # Startup
     logger.info("Starting up FN Brno Virtual Assistant API")
@@ -51,9 +55,13 @@ async def lifespan(app: FastAPI):
         logger.info("Initializing embedding generator...")
         embedder = EmbeddingGenerator()
 
+        logger.info("Initializing FHIR client...")
+        fhir_client = FHIRClient(settings)
+        fhir_tool_executor = FHIRToolExecutor(fhir_client)
+
         logger.info("Initializing retriever and generator...")
         retriever = VectorRetriever(db, embedder)
-        generator = ResponseGenerator()
+        generator = ResponseGenerator(fhir_tool_executor)
 
         logger.info("Initializing session manager and RAG router...")
         session_manager = SessionManager()
@@ -226,6 +234,7 @@ async def chat(request: ChatRequest):
         category = rag_router.classify_intent(request.query, history)
 
         # Determine if RAG needed based on category
+        # FHIR patient lookup doesn't need traditional RAG but uses tool calling instead
         needs_rag = category in [
             IntentCategory.GENERAL_RAG,
             IntentCategory.TRIP_REQUEST,

@@ -16,6 +16,7 @@ KATEGORIE:
 2. conversational - Pozdravy, konverzace, dotazy co umíš (např. "Ahoj", "Jak se máš?", "Co umíš?")
 3. trip_request - Uživatel chce PODAT ŽÁDOST o pracovní cestu (před cestou)
 4. trip_expense - Uživatel chce VYÚČTOVAT pracovní cestu (po cestě, má účtenky)
+5. fhir_patient_lookup - Hledání pacientů nebo jejich informací v databázi
 
 PRAVIDLA PRO ROZPOZNÁNÍ PRACOVNÍ CESTY:
 
@@ -37,6 +38,20 @@ trip_expense (Vyúčtování cesty):
   * "Byl jsem v Praze, mám účtenky, co s nimi?"
   * "Jak si nechat proplatit výdaje z cesty?"
   * "Co mám dělat po návratu ze služební cesty?"
+
+PRAVIDLA PRO ROZPOZNÁNÍ VYHLEDÁVÁNÍ PACIENTA:
+
+fhir_patient_lookup (Hledání pacientů):
+- Klíčová slova: "najdi pacienta", "hledej pacienta", "vyhledej pacienty", "informace o pacientech", "pacienti s", "pacienty narozené", "ženy", "muži", "datum narození"
+- Kontext: Dotazy na konkrétní pacienty nebo skupiny pacientů podle demografických kritérií
+- Příklady:
+  * "Najdi pacienta jménem Jan Novák"
+  * "Hledám informace o pacientce Marii Svobodové"
+  * "Dej mi informace o všech ženách narozených před rokem 2000"
+  * "Vyhledej pacienty s příjmením Dvořák"
+  * "Pacienti narozené v roce 1985"
+  * "Muži starší 40 let"
+  * "Pacient s identifikátorem 12345"
 
 UPOZORNĚNÍ:
 - Pokud se dotaz ptá "JAK to funguje?" nebo "CO musím udělat?" a nespadá do žádné z ostatních kategorií → general_rag (je to informační dotaz)
@@ -120,6 +135,22 @@ KONTEXT: Uživatel chce VYÚČTOVAT pracovní cestu.
 
 - Neuvádej link na formulář - formulář se zobrazí automaticky"""
 
+FHIR_PATIENT_LOOKUP_EXTENSION = """
+KONTEXT: Uživatel chce vyhledat pacienty v FHIR databázi.
+
+POVINNÉ KROKY:
+1. VŽDY NEJPRVE ZAVOLEJ nástroj search_fhir_patients
+2. Extrahuj vyhledávací parametry z českého dotazu:
+   * jméno/příjmení (name, family, given)
+   * datum narození (birthdate) - pro roky použij formát roku (např. "2022" pro rok 2022)
+   * pohlaví (gender) - "male" pro muže, "female" pro ženy
+   * identifikátor pacienta (identifier)
+3. Po získání výsledků ze search_fhir_patients prezentuj je v češtině
+4. Buď profesionální a respektuj citlivost pacientských dat
+5. Pokud vyhledávání nevrátí žádné výsledky, navrhni upresnění kritérií
+
+KRITICKY DŮLEŽITÉ: NIKDY neodpovídej bez volání search_fhir_patients!"""
+
 # Complete system prompt template
 SYSTEM_PROMPT_TEMPLATE = """{base_prompt}
 
@@ -156,6 +187,7 @@ def get_system_prompt(has_context: bool, has_history: bool, formatted_history: s
         IntentCategory.CONVERSATIONAL: CONVERSATIONAL_EXTENSION,
         IntentCategory.TRIP_REQUEST: TRIP_REQUEST_EXTENSION,
         IntentCategory.TRIP_EXPENSE: TRIP_EXPENSE_EXTENSION,
+        IntentCategory.FHIR_PATIENT_LOOKUP: FHIR_PATIENT_LOOKUP_EXTENSION,
     }
     extension = extensions[category]
 
