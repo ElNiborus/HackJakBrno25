@@ -17,6 +17,8 @@ An intelligent **multi-agent system** that serves as a unified interface for hos
 
 **🔐 Role-Based Access:** Different employees see different capabilities based on their permissions (e.g., only authorized staff can access patient data, only employees can submit trip requests).
 
+## Example Screenshot
+![Screenshot](assets/screenshot.png)
 ---
 
 ## System Overview 🏗️
