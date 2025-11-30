@@ -744,12 +744,37 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
   }
 
   const scrollToSource = (key) => {
-  requestAnimationFrame(() => {
-    const el = sourcesRefs.current[key];
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'instant', block: 'start' });
-  });
-};
+    requestAnimationFrame(() => {
+      const el = sourcesRefs.current[key];
+      if (!el) return;
+      
+      // Try to find the next sibling hr element (separator before form)
+      let targetEl = el;
+      let nextSibling = el.nextElementSibling;
+      
+      // Look for hr element that comes after sources
+      while (nextSibling) {
+        if (nextSibling.tagName === 'HR') {
+          targetEl = nextSibling;
+          break;
+        }
+        nextSibling = nextSibling.nextElementSibling;
+      }
+      
+      // Get the element's position
+      const rect = targetEl.getBoundingClientRect();
+      const messagesContainer = targetEl.closest('.messages-container');
+      if (!messagesContainer) return;
+      
+      const containerRect = messagesContainer.getBoundingClientRect();
+      
+      // Check if the target element is below the visible area
+      // Only scroll if the element is not fully visible
+      if (rect.top > containerRect.bottom || rect.bottom > containerRect.bottom) {
+        targetEl.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+      }
+    });
+  };
 
   useEffect(() => {
     // Only scroll to bottom when messages change, but not when just toggling sources
@@ -864,7 +889,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
           }
 
           const chunk = chunkNormalized.substring(0, 25);
-          for (let i = 0; i <= pageText.length - chunk.length; i+= 5) {
+          for (let i = 0; i <= pageText.length - chunk.length; i+= 2) {
             let sub = pageText.substring(i, i + chunk.length);
             if (similarity(sub, chunk) >= 0.7) {
               console.log("Found at index", i);
@@ -1186,56 +1211,37 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                   />
                   <div className="message-wrapper">
                     <div className="message-content">
-                {message.actionType === 'show_trip_form' ? (
-                  <>
-                    <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
-                    <TravelForm
-                      onSubmit={handleFormSubmit}
-                      onDocumentUpload={handleDocumentUpload}
-                      userId={userId}
-                    />
-                  </>
-                ) : message.actionType === 'show_expense_form' ? (
-                  <>
-                    <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
-                    <TripExpenseForm
-                      onSubmit={handleForm2Submit}
-                      userId={userId}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
-
-                    {message.sources && message.sources.length > 0 && (
-                      <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>
-                        <div 
-                          className="sources-header" 
-                          onClick={() => {
-                            const messageKey = `msg-${index}`;
-                            const isCurrentlyCollapsed = collapsedSources[messageKey];
-                            setCollapsedSources(prev => ({
-                              ...prev,
-                              [messageKey]: !prev[messageKey]
-                            }));
-                            // If expanding, scroll to show the content
-                            if (isCurrentlyCollapsed) {
-                              scrollToSource(messageKey);
-                            }
-                          }}
-                          style={{ cursor: 'pointer', userSelect: 'none' }}
-                        >
-                          <span style={{ 
-                            marginRight: '8px',
-                            display: 'inline-block',
-                            transition: 'transform 0.2s',
-                            transform: collapsedSources[`msg-${index}`] ? 'rotate(-90deg)' : 'rotate(0deg)'
-                          }}>
-                            ▼
-                          </span>
-                          📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}
-                        </div>
-                        {!collapsedSources[`msg-${index}`] && (() => {
+                      <div className="message-text" dangerouslySetInnerHTML={{ __html: message.text }} />
+                      
+                      {message.sources && message.sources.length > 0 && (
+                        <div className="sources-section" ref={el => sourcesRefs.current[`msg-${index}`] = el}>
+                          <div 
+                            className="sources-header" 
+                            onClick={() => {
+                              const messageKey = `msg-${index}`;
+                              const isCurrentlyCollapsed = collapsedSources[messageKey];
+                              setCollapsedSources(prev => ({
+                                ...prev,
+                                [messageKey]: !prev[messageKey]
+                              }));
+                              // If expanding, scroll to show the content
+                              if (isCurrentlyCollapsed) {
+                                scrollToSource(messageKey);
+                              }
+                            }}
+                            style={{ cursor: 'pointer', userSelect: 'none' }}
+                          >
+                            <span style={{ 
+                              marginRight: '8px',
+                              display: 'inline-block',
+                              transition: 'transform 0.2s',
+                              transform: collapsedSources[`msg-${index}`] ? 'rotate(-90deg)' : 'rotate(0deg)'
+                            }}>
+                              ▼
+                            </span>
+                            📚 {message.sources.length === 1 ? 'Zdroj informace:' : 'Zdroje informací:'}
+                          </div>
+                          {!collapsedSources[`msg-${index}`] && (() => {
                           // Sort sources by document_name
                           const sortedSources = [...message.sources].sort((a, b) => 
                             a.document_name.localeCompare(b.document_name, 'cs')
@@ -1250,8 +1256,25 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                             groupedSources[source.document_name].push(source);
                           });
                           
-                          return Object.entries(groupedSources).map(([docName, sources], groupIdx) => {
+                          // Sort sources within each group by relevance_score (highest first)
+                          Object.keys(groupedSources).forEach(docName => {
+                            groupedSources[docName].sort((a, b) => b.relevance_score - a.relevance_score);
+                          });
+                          
+                          // Sort document groups by maximum relevance_score (highest first)
+                          const sortedGroups = Object.entries(groupedSources).sort((a, b) => {
+                            const maxScoreA = Math.max(...a[1].map(s => s.relevance_score));
+                            const maxScoreB = Math.max(...b[1].map(s => s.relevance_score));
+                            return maxScoreB - maxScoreA;
+                          });
+                          
+                          return sortedGroups.map(([docName, sources], groupIdx) => {
                             const isXlsx = docName.toLowerCase().endsWith('.xlsx');
+                            
+                            // Calculate maximum and minimum relevance scores across all sources in the message
+                            const allScores = message.sources.map(s => s.relevance_score);
+                            const maxRelevanceScore = Math.max(...allScores);
+                            const minRelevanceScore = Math.min(...allScores);
                             
                             return (
                               <div key={groupIdx} style={{ 
@@ -1276,9 +1299,9 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                       handleDocumentClick(sources[0].document_name, sources[0].chunk_text);
                                     }}
                                     style={{
-                                      backgroundColor: '#e8eef8',
-                                      color: '#0B2265',
-                                      border: '1px solid #c5d0de',
+                                      backgroundColor: '#1e3a5f',
+                                      color: '#ffffff',
+                                      border: '1px solid #1e3a5f',
                                       borderRadius: '6px',
                                       padding: '6px 14px',
                                       fontSize: '13px',
@@ -1288,18 +1311,59 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                       transition: 'all 0.2s'
                                     }}
                                     onMouseEnter={(e) => {
-                                      e.target.style.backgroundColor = '#d4dcec';
-                                      e.target.style.borderColor = '#1a3378';
+                                      e.target.style.backgroundColor = '#2c5282';
+                                      e.target.style.borderColor = '#2c5282';
                                     }}
                                     onMouseLeave={(e) => {
-                                      e.target.style.backgroundColor = '#e8eef8';
-                                      e.target.style.borderColor = '#c5d0de';
+                                      e.target.style.backgroundColor = '#1e3a5f';
+                                      e.target.style.borderColor = '#1e3a5f';
                                     }}
                                   >
                                     Stáhnout
                                   </button>
                                 ) : (
                                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                    {sources.map((source, idx) => {
+                                      // Linear interpolation: map scores from [min, max] to [10, 100]
+                                      let relativeScore;
+                                      if (maxRelevanceScore === minRelevanceScore) {
+                                        relativeScore = 100.0;
+                                      } else {
+                                        relativeScore = 10.0 + ((source.relevance_score - minRelevanceScore) / (maxRelevanceScore - minRelevanceScore)) * 90.0;
+                                      }
+                                      return (
+                                        <button
+                                          key={idx}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDocumentClick(source.document_name, source.chunk_text);
+                                          }}
+                                          title={`Relevance: ${relativeScore.toFixed(1)}%`}
+                                          style={{
+                                            backgroundColor: '#e8eef8',
+                                            color: '#0B2265',
+                                            border: '1px solid #c5d0de',
+                                            borderRadius: '6px',
+                                            padding: '6px 12px',
+                                            fontSize: '13px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            whiteSpace: 'nowrap',
+                                            transition: 'all 0.2s'
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            e.target.style.backgroundColor = '#d4dcec';
+                                            e.target.style.borderColor = '#1a3378';
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.target.style.backgroundColor = '#e8eef8';
+                                            e.target.style.borderColor = '#c5d0de';
+                                          }}
+                                        >
+                                          Úsek {idx + 1}
+                                        </button>
+                                      );
+                                    })}
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -1307,9 +1371,9 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                         window.open(downloadUrl, '_blank');
                                       }}
                                       style={{
-                                        backgroundColor: '#e8eef8',
-                                        color: '#0B2265',
-                                        border: '1px solid #c5d0de',
+                                        backgroundColor: '#1e3a5f',
+                                        color: '#ffffff',
+                                        border: '1px solid #1e3a5f',
                                         borderRadius: '6px',
                                         padding: '6px 14px',
                                         fontSize: '13px',
@@ -1319,47 +1383,16 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                         transition: 'all 0.2s'
                                       }}
                                       onMouseEnter={(e) => {
-                                        e.target.style.backgroundColor = '#d4dcec';
-                                        e.target.style.borderColor = '#1a3378';
+                                        e.target.style.backgroundColor = '#2c5282';
+                                        e.target.style.borderColor = '#2c5282';
                                       }}
                                       onMouseLeave={(e) => {
-                                        e.target.style.backgroundColor = '#e8eef8';
-                                        e.target.style.borderColor = '#c5d0de';
+                                        e.target.style.backgroundColor = '#1e3a5f';
+                                        e.target.style.borderColor = '#1e3a5f';
                                       }}
                                     >
                                       Stáhnout
                                     </button>
-                                    {sources.map((source, idx) => (
-                                      <button
-                                        key={idx}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDocumentClick(source.document_name, source.chunk_text);
-                                        }}
-                                        style={{
-                                          backgroundColor: '#e8eef8',
-                                          color: '#0B2265',
-                                          border: '1px solid #c5d0de',
-                                          borderRadius: '6px',
-                                          padding: '6px 12px',
-                                          fontSize: '13px',
-                                          fontWeight: '500',
-                                          cursor: 'pointer',
-                                          whiteSpace: 'nowrap',
-                                          transition: 'all 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.target.style.backgroundColor = '#d4dcec';
-                                          e.target.style.borderColor = '#1a3378';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.target.style.backgroundColor = '#e8eef8';
-                                          e.target.style.borderColor = '#c5d0de';
-                                        }}
-                                      >
-                                        Úsek {idx + 1}
-                                      </button>
-                                    ))}
                                   </div>
                                 )}
                               </div>
@@ -1368,8 +1401,27 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                         })()}
                       </div>
                     )}
-                    </>
-                  )}
+
+                    {message.actionType === 'show_trip_form' && (
+                      <>
+                        <hr style={{ margin: '13px 0 15px 0', border: 'none', borderTop: '1px solid #e0e0e0' }} />
+                        <TravelForm
+                          onSubmit={handleFormSubmit}
+                          onDocumentUpload={handleDocumentUpload}
+                          userId={userId}
+                        />
+                      </>
+                    )}
+                    
+                    {message.actionType === 'show_expense_form' && (
+                      <>
+                        <hr style={{ margin: '13px 0 15px 0', border: 'none', borderTop: '1px solid #e0e0e0' }} />
+                        <TripExpenseForm
+                          onSubmit={handleForm2Submit}
+                          userId={userId}
+                        />
+                      </>
+                    )}
                 </div>
 
                   <div className="message-timestamp">
@@ -1526,7 +1578,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Napište svou otázku..."
-              disabled={isLoading}
+              disabled={false}
               className="chat-input"
             />
             <button
@@ -1583,9 +1635,34 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                 {currentDocName.replace(/\.[^/.]+$/, ".pdf")}
               </a>
             </h3>
-            <button onClick={closePdfSidebar} className="close-sidebar-btn">
-              ✕
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                onClick={() => {
+                  const pdfUrl = `${API_URL}/view-pdf/${currentDocName.replace(/\.[^/.]+$/, ".pdf")}#page=${currentPage}`;
+                  window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+                }}
+                style={{
+                  backgroundColor: '#0B2265',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  marginRight: '10px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#1a3378'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#0B2265'}
+              >
+                Otevřít v novém okně
+              </button>
+              <button onClick={closePdfSidebar} className="close-sidebar-btn">
+                ✕
+              </button>
+            </div>
           </div>
           <div className="pdf-sidebar-content">
             <canvas ref={pdfCanvasRef}></canvas>
