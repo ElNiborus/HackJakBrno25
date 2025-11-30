@@ -1671,7 +1671,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
       {pdfSidebarOpen && (
         <div className="pdf-sidebar">
           <div className="pdf-sidebar-header">
-            <h3 style={{ color: 'inherit', textDecoration: 'none', cursor: 'default', color: "white" }}>
+            <h3 style={{ color: "white", textDecoration: 'none', cursor: 'default' }}>
               {currentDocName.replace(/\.[^/.]+$/, ".pdf")}
             </h3>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
