@@ -11,7 +11,12 @@ const roleDisplayNames = {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null)
+  // Default to Anna logged in
+  const [currentUser, setCurrentUser] = useState({
+    userId: 1,
+    name: 'Anna Konecna',
+    role: 'nurse'
+  })
 
   const handleLogin = (userData) => {
     setCurrentUser(userData)
