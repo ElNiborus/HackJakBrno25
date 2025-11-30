@@ -1319,7 +1319,10 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                       e.target.style.borderColor = '#1e3a5f';
                                     }}
                                   >
-                                    Stáhnout
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle' }}>
+                                      <path d="M12 3V16M12 16L7 11M12 16L17 11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                      <path d="M3 21H21" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                                    </svg>
                                   </button>
                                 ) : (
                                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1344,7 +1347,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                             color: '#0B2265',
                                             border: '1px solid #c5d0de',
                                             borderRadius: '6px',
-                                            padding: '6px 12px',
+                                            padding: '6px 9px',
                                             fontSize: '13px',
                                             fontWeight: '500',
                                             cursor: 'pointer',
@@ -1375,7 +1378,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                         color: '#ffffff',
                                         border: '1px solid #1e3a5f',
                                         borderRadius: '6px',
-                                        padding: '6px 14px',
+                                        padding: '6px 8px',
                                         fontSize: '13px',
                                         fontWeight: '500',
                                         cursor: 'pointer',
@@ -1391,7 +1394,10 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                                         e.target.style.borderColor = '#1e3a5f';
                                       }}
                                     >
-                                      Stáhnout
+                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle' }}>
+                                        <path d="M12 3V16M12 16L7 11M12 16L17 11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M3 21H21" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                                      </svg>
                                     </button>
                                   </div>
                                 )}
@@ -1404,7 +1410,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
 
                     {message.actionType === 'show_trip_form' && (
                       <>
-                        <hr style={{ margin: '13px 0 15px 0', border: 'none', borderTop: '1px solid #e0e0e0' }} />
+                        <hr style={{ margin: '13px 0 15px 0', border: 'none', borderTop: '1px solid #c9c9c9ff' }} />
                         <TravelForm
                           onSubmit={handleFormSubmit}
                           onDocumentUpload={handleDocumentUpload}
@@ -1415,7 +1421,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                     
                     {message.actionType === 'show_expense_form' && (
                       <>
-                        <hr style={{ margin: '13px 0 15px 0', border: 'none', borderTop: '1px solid #e0e0e0' }} />
+                        <hr style={{ margin: '13px 0 15px 0', border: 'none', borderTop: '1px solid #c9c9c9ff' }} />
                         <TripExpenseForm
                           onSubmit={handleForm2Submit}
                           userId={userId}
@@ -1527,52 +1533,92 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
 
           <div ref={messagesEndRef} />
         </div>
-
-        {!messages.some(m => m.type === 'user') && (
-          <div className="example-queries">
-            <p className="example-title">💡 Příklady otázek:</p>
-            <div className="example-buttons">
+          
+          <div 
+            className="example-queries" 
+            style={{ 
+              position: 'absolute',
+              bottom: '80px',
+              left: '0',
+              right: '0',
+              opacity: messages.some(m => m.type === 'user') ? 0 : 1,
+              transition: 'opacity 0.3s ease',
+              backgroundColor: 'transparent',
+              zIndex: 5,
+              pointerEvents: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
+            id="example-queries-hover"
+          >
+            <div
+              style={{
+                pointerEvents: 'auto'
+              }}
+              onMouseEnter={() => {
+                const exampleDiv = document.getElementById('example-queries-hover');
+                if (exampleDiv && messages.some(m => m.type === 'user')) {
+                  exampleDiv.style.opacity = '1';
+                }
+              }}
+              onMouseLeave={() => {
+                const exampleDiv = document.getElementById('example-queries-hover');
+                if (exampleDiv && messages.some(m => m.type === 'user')) {
+                  exampleDiv.style.opacity = '0';
+                }
+              }}
+            >
+              {messages.length === 1 && (
+                <p className="example-title" style={{ 
+                  padding: '8px 20px', 
+                }}>💡 Příklady otázek:</p>
+              )}
+              <div className="example-buttons">
               <button
                 onClick={() => setInputValue('Co mám dělat, když si chci koupit nový mobil?')}
                 className="example-button"
-                disabled={isLoading}
+                disabled={false}
               >
                 Nákup mobilu
               </button>
               <button
                 onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
                 className="example-button"
-                disabled={isLoading}
+                disabled={false}
               >
                 Pracovní cesta
               </button>
               <button
                 onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
                 className="example-button"
-                disabled={isLoading}
+                disabled={false}
               >
                 Procesy CI
               </button>
               <button
                 onClick={() => setInputValue('Jaký má plat Petr?')}
                 className="example-button"
-                disabled={isLoading}
+                disabled={false}
               >
                 Plat Petra
               </button>
                <button
                 onClick={() => setInputValue('Dej mi informace o všech mužských pacientech narozených v roce 1971.')}
                 className="example-button"
-                disabled={isLoading}
+                disabled={false}
               >
                 Muži, pacienti narození 1971
               </button>             
             </div>
+            </div>
           </div>
-        )}
+
 
         <form onSubmit={handleSubmit} className="input-container">
-          <div className="input-wrapper">
+          <div 
+            className="input-wrapper"
+          >
             <input
               type="text"
               value={inputValue}
@@ -1584,7 +1630,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
             <button
               type="button"
               onClick={toggleVoiceInput}
-              disabled={isLoading}
+              disabled={false}
               className={`voice-button ${isListening ? 'listening' : ''}`}
               aria-label={isListening ? 'Zastavit nahrávání' : 'Začít hlasové zadávání'}
               title={isListening ? 'Zastavit nahrávání' : 'Hlasové zadávání'}
@@ -1609,7 +1655,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
             className="send-button"
           >
             {isLoading ? (
-              <div className="bracket-spinner">
+              <div className="bracket-spinner" style={{ width: '20px', height: '20px' }}>
                 <img src="/left_bracket.png" alt="Loading" />
               </div>
             ) : (
@@ -1625,15 +1671,8 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
       {pdfSidebarOpen && (
         <div className="pdf-sidebar">
           <div className="pdf-sidebar-header">
-            <h3>
-              <a 
-                href={`${API_URL}/view-pdf/${currentDocName.replace(/\.[^/.]+$/, ".pdf")}#page=${currentPage}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'inherit', textDecoration: 'none' }}
-              >
-                {currentDocName.replace(/\.[^/.]+$/, ".pdf")}
-              </a>
+            <h3 style={{ color: 'inherit', textDecoration: 'none', cursor: 'default', color: "white" }}>
+              {currentDocName.replace(/\.[^/.]+$/, ".pdf")}
             </h3>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button
