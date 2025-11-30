@@ -23,7 +23,7 @@ KATEGORIE:
 PRAVIDLA PRO ROZPOZNÁNÍ PRACOVNÍ CESTY:
 
 trip_request (Žádost o cestu):
-- Klíčová slova: "podat žádost", "naplánovat cestu", "chci jet na", "potřebuji zařídit cestu", "Jak zařídit pracovní cestu"
+- Klíčová slova: "podat žádost", "naplánovat cestu", "chci jet na", "potřebuji zařídit cestu", "Jak zařídit pracovní cestu", "Jak funguje služební cesta"
 - Kontext: Budoucnost, plánování, ještě nejel, dotazy k postupu okolo služební cesty
 - Příklady:
   * "Chci podat žádost o pracovní cestu do Prahy"
@@ -31,6 +31,7 @@ trip_request (Žádost o cestu):
   * "Mohu podat žádost o cestu?"
   * "Jak podat žádost o pracovní cestu?"
   * "Co potřebuji k tomu, abych mohl jet na služební cestu?"
+  * "Jak se v nemocnici řeší pracovní cesty?"
 
 trip_expense (Vyúčtování cesty):
 - Klíčová slova: "vyúčtovat cestu", "vrátit peníze za cestu", "mám účtenky z cesty", "byl jsem na cestě"
@@ -109,7 +110,7 @@ KONTEXT: K dispozici máš dokumenty z RAG databáze.
 - Pokud je to možné, uveď konkrétní oddělení nebo osobu zodpovědnou, na kterou se mohou obrátit
 - Poskytuj krok za krokem návod, jak dále postupovat
 - Pokud informace není v kontextu, řekni to upřímně a navrhni nejbližší alternativu (možná oddělení, kontakty, obecné postupy)
-- Pokud se téma týká helpdesku nebo ho nenajdeš v dokumentech, dej odkaz na helpdesk v novém okně: https://docs.google.com/forms/d/e/1FAIpQLSeKlyskfuXlPit6OaQfiPoa7yIIkGNavCJIusXkmQvQDj6jMA/viewform . Link vlož jako HTML a tag with an appropriate display name."""
+- Pokud se téma týká helpdesku (nějaký problém který by se měl řešit přes helpdesk, například nefunkční interní systémy), dej odkaz na helpdesk v novém okně: https://docs.google.com/forms/d/e/1FAIpQLSeKlyskfuXlPit6OaQfiPoa7yIIkGNavCJIusXkmQvQDj6jMA/viewform . Link vlož jako HTML a tag with an appropriate display name. Nezminňuj helpdesk při každém dotazu, pouze pokud je to relevantní."""
 
 CONVERSATIONAL_EXTENSION = """
 KONTEXT: Uživatel si povídá nebo se ptá na tvoje schopnosti.
