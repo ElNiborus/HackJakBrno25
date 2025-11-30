@@ -123,7 +123,7 @@ KONTEXT: Uživatel chce zjistit více informací o pracovní cestě.
 - Vysvětli klíčové požadavky (např. dopravní prostředky, schválení)
 - DŮLEŽITÉ: Na konci odpovědi VŽDY uveď:
 
-"Pro podání žádosti o pracovní cestu můžete použít následující formulář:"
+"Pro zjednodušené podání žádosti o pracovní cestu můžete použít následující formulář:"
 
 - Neuvádej link na formulář - zobrazí se automaticky"""
 
@@ -133,7 +133,7 @@ KONTEXT: Uživatel chce VYÚČTOVAT pracovní cestu.
 - Vysvětli jaké doklady jsou potřeba (účtenky, potvrzení)
 - DŮLEŽITÉ: Na konci odpovědi VŽDY uveď:
 
-"Pro vyúčtování pracovní cesty můžete použít následující formulář:"
+"Pro zjednodušené vyúčtování pracovní cesty můžete použít následující formulář:"
 
 - Neuvádej link na formulář - formulář se zobrazí automaticky"""
 
