@@ -9,11 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 class SessionManager:
-    """Manages conversation sessions in memory."""
+    """Manages conversation sessions and user authentication in memory."""
 
     def __init__(self):
         """Initialize session manager with empty storage."""
         self.conversations: Dict[str, List[Message]] = {}
+        self.user_sessions: Dict[str, dict] = {}  # session_id -> {user_id, name, role, created_at}
         logger.info("SessionManager initialized")
 
     def create_session(self) -> str:

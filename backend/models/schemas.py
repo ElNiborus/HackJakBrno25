@@ -121,3 +121,27 @@ class ChatResponse(BaseModel):
     sources: List[SourceReference]  # Empty if used_rag=False
     processing_time: float
     action_type: Optional[ActionType] = None  # Optional action to trigger in frontend
+
+
+# Authentication models
+class LoginRequest(BaseModel):
+    """Request for login endpoint"""
+    email: str
+    code: str
+
+
+class LoginResponse(BaseModel):
+    """Response from login endpoint"""
+    session_id: str
+    user_id: int
+    name: str
+    role: str
+    message: str
+
+
+class SessionCheckResponse(BaseModel):
+    """Response from session check endpoint"""
+    valid: bool
+    user_id: Optional[int] = None
+    name: Optional[str] = None
+    role: Optional[str] = None
