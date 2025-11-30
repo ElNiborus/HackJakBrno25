@@ -40,7 +40,11 @@ All application configuration is centralized in `backend/config.py`:
 
 Environment variables (`.env`) contain only secrets and environment-specific values:
 - OPENAI_API_KEY
-- IRIS database credentials
+- IRIS database credentials (IRIS_PORT=32782, IRIS_PASSWORD=ISCDEMO)
+
+**IMPORTANT:**
+- IRIS_PORT must be 32782 (NOT 1972) - this is the Docker-mapped host port
+- IRIS_PASSWORD must be ISCDEMO (NOT SYS) - this is the FHIR-AI-Hackathon-Kit default
 
 ### Key Scenarios Handled
 -   "Co mám dělat, když si chci koupit nový mobil?" (IT purchase procedures)
