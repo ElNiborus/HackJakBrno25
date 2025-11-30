@@ -1054,7 +1054,10 @@ function ChatInterface({ userRole, userId }) {
       // Call chat endpoint with session tracking
       console.log('[ChatInterface] Making POST request to /chat...')
       console.log('[ChatInterface] User role:', userRole, 'User ID:', userId)
-      const requestBody = { query, user_id: userId }
+      const requestBody = { 
+        query, 
+        user_id: parseInt(userId)
+      }
       if (sessionId) {
         requestBody.session_id = sessionId
       }
@@ -1497,6 +1500,13 @@ function ChatInterface({ userRole, userId }) {
                 disabled={isLoading}
               >
                 Procesy CI
+              </button>
+              <button
+                onClick={() => setInputValue('Jaký má plat Petr?')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Plat Petra
               </button>
             </div>
           </div>
