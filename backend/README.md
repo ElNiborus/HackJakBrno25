@@ -1,171 +1,85 @@
 # Backend Documentation
 
-FastAPI backend implementing multi-agent orchestration with role-based access control. See [main README](../README.md) for architecture overview and quick start.
+FastAPI backend implementing multi-agent orchestration with role-based access control for the FN Brno Virtual Assistant (**Hack jak Brno 2025**).
 
-This document covers backend-specific implementation details, API endpoints, and development guidelines.
+See [main README](../README.md) for architecture overview and setup.
+
+---
 
 ## Project Structure
 
 ```
 backend/
-├── app.py                      # FastAPI application and endpoints
-├── config.py                   # Configuration and settings
-├── iris_db.py                  # InterSystems IRIS vector database connector
+├── app.py                      # Main FastAPI application with endpoints
+├── config.py                   # Configuration management (models, RAG params, database)
+├── iris_db.py                  # InterSystems IRIS database connector
 ├── models/
-│   └── schemas.py              # Pydantic models for API requests/responses
+│   └── schemas.py              # API request/response models
 ├── conversation/
-│   └── session_manager.py      # Multi-user session management
+│   └── session_manager.py      # Multi-user session tracking
 ├── rag/
 │   ├── router.py               # Intent classification and agent routing
-│   ├── generator.py            # Response generation with LLM
+│   ├── generator.py            # LLM response generation
 │   ├── retriever.py            # Vector similarity search
-│   └── prompts.py              # Czech language system prompts
+│   └── prompts.py              # Czech system prompts for each agent
 ├── fhir/
 │   ├── client.py               # FHIR R4 API client
-│   ├── executor.py             # Function call execution handler
-│   └── tools.py                # OpenAI function definitions for patient search
+│   ├── executor.py             # Function call handler
+│   └── tools.py                # OpenAI function definitions
 └── ingestion/
     ├── parsers.py              # Document parsers (DOCX, XLSX)
     ├── chunker.py              # Text chunking with overlap
     └── embedder.py             # Embedding generation
 ```
 
-## FHIR Patient Lookup Integration
-
-The Patient Lookup Agent uses OpenAI function calling to translate Czech natural language queries into FHIR R4 API requests.
-
-### Supported Queries
-
-The system recognizes Czech patient lookup patterns:
-
-```
-- "Najdi pacienta jménem Jan Novák"
-- "Hledám informace o pacientce Marii Svobodové"
-- "Dej mi informace o všech ženách narozených před rokem 2000"
-- "Vyhledej pacienty s příjmením Dvořák"
-- "Pacienti narozené v roce 1985"
-- "Muži starší 40 let"
-```
-
-### FHIR Search Parameters
-
-The system extracts and maps Czech queries to FHIR R4 parameters:
-
-| Czech Term | FHIR Parameter | Description |
-|------------|----------------|-------------|
-| jméno/příjmení | `name`, `family`, `given` | Patient name search |
-| datum narození | `birthdate` | Birth date with range support |
-| pohlaví (muž/žena) | `gender` | male/female/other/unknown |
-| identifikátor | `identifier` | Patient ID/MRN |
-
-### Date Range Handling
-
-The system supports flexible date formats:
-
-- **Year ranges**: "2022 do 2025" → `ge2022-01-01&le2025-12-31`
-- **Before/after**: "před rokem 2000" → `le2000-01-01`
-- **Specific years**: "v roce 1985" → `ge1985-01-01&le1985-12-31`
-- **Exact dates**: "1980-05-15" → `eq1980-05-15`
-
-### Implementation Details
-
-#### 1. Intent Classification
-```python
-# rag/router.py
-category = rag_router.classify_intent(query, history)
-if category == IntentCategory.FHIR_PATIENT_LOOKUP:
-    # Route to FHIR tool calling
-```
-
-#### 2. Function Calling Setup
-```python
-# fhir/tools.py
-FHIR_PATIENT_SEARCH_TOOL = {
-    "type": "function",
-    "name": "search_fhir_patients",
-    "description": "Search for patients in FHIR database...",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "name": {"type": "string", "description": "Patient name..."},
-            "birthdate": {"type": "string", "description": "Birth date..."},
-            "gender": {"type": "string", "enum": ["male", "female", "other", "unknown"]},
-            # ... other parameters
-        }
-    }
-}
-```
-
-#### 3. Tool Execution
-```python
-# rag/generator.py
-response = self.client.responses.create(
-    model="gpt-5-mini",
-    instructions=system_prompt,
-    input=input_list,
-    tools=get_fhir_tools(),
-    max_output_tokens=1000
-)
-
-# Process function calls
-for item in response.output:
-    if item.type == "function_call" and item.name == "search_fhir_patients":
-        patients = fhir_client.search_patients(json.loads(item.arguments))
-        # Return results to model for Czech response generation
-```
-
-#### 4. Czech Response Formatting
-```python
-# fhir/client.py
-def format_patients_for_czech_response(self, patients):
-    if not patients:
-        return "Nebyli nalezeni žádní pacienti odpovídající zadaným kritériím."
-
-    result_lines = [f"Nalezeno {len(patients)} pacientů:"]
-    for i, patient in enumerate(patients, 1):
-        result_lines.append(f"{i}. {patient['name']}")
-        if patient['birthdate']:
-            result_lines.append(f"   • Datum narození: {formatted_date}")
-        # ... format other fields
-```
-
-## Intent Classification & Routing
-
-The router (`rag/router.py`) classifies queries into categories and enforces role-based access:
-
-| Intent Category | Agent | Role Required | Implementation |
-|----------------|-------|---------------|----------------|
-| `general_rag` | Knowledge Search Agent | Any | Vector search + RAG |
-| `conversational` | Conversational Agent | Any | Direct LLM response |
-| `trip_request` | Travel Request Agent | `employee` | Multi-step workflow |
-| `trip_expense` | Travel Expense Agent | `employee` | Receipt validation |
-| `fhir_patient_lookup` | Patient Lookup Agent | `doctor`, `admin` | Function calling |
+---
 
 ## Configuration
 
-See main README for basic configuration. Additional backend-specific settings:
+### Environment Variables (`backend/.env`)
 
-### config.py Settings
+```env
+# Required
+OPENAI_API_KEY=your_key_here
+
+# IRIS Database (defaults work with Docker setup)
+IRIS_HOST=localhost
+IRIS_PORT=32782
+IRIS_NAMESPACE=USER
+IRIS_USERNAME=_SYSTEM
+IRIS_PASSWORD=ISCDEMO
+```
+
+### Application Settings (`backend/config.py`)
+
+Configure models and behavior:
 
 ```python
 # Model Configuration
-openai_model: str = "gpt-5"
-router_model: str = "gpt-5"
+openai_model: str = "gpt-5"              # Main LLM
+embedding_model: str = "text-embedding-3-large"
+embedding_dimension: int = 3072
+
+# Router Configuration
+router_model: str = "gpt-5"              # Intent classifier
 router_reasoning_effort: str = "minimal"
 
 # RAG Configuration
-top_k_results: int = 10
-min_relevance_score: float = 0.0
-max_history_messages: int = 10
+top_k_results: int = 10                   # Number of chunks to retrieve
+min_relevance_score: float = 0.0          # Minimum similarity threshold
+max_history_messages: int = 10            # Conversation context length
 
 # FHIR Configuration
+fhir_base_url: str = "http://localhost:32783"
 fhir_timeout: int = 30
 fhir_max_results: int = 50
 ```
 
-### User Roles (user_info.json)
+**For on-premise deployment:** Replace OpenAI endpoints with vLLM server URL (API-compatible).
 
-Configure role-based access in `backend/user_info.json`:
+### User Roles (`backend/user_info.json`)
+
+Define users and their permissions:
 
 ```json
 {
@@ -184,104 +98,110 @@ Configure role-based access in `backend/user_info.json`:
 }
 ```
 
-## API Endpoints
+---
 
-### POST `/chat`
-Main endpoint with session management and multi-agent routing.
+## Key Components
 
-**Request:**
-```json
-{
-  "query": "Najdi pacienta jménem Jan Novák",
-  "session_id": "optional_session_id",
-  "user_id": "doctor123"
-}
-```
+### Intent Router (`rag/router.py`)
+- Classifies user queries into categories
+- Enforces role-based access control
+- Routes to appropriate specialized agent
 
-**Response:**
-```json
-{
-  "session_id": "uuid",
-  "message": {
-    "role": "assistant",
-    "content": "Nalezeno 2 pacientů...",
-    "sources": [...]
-  },
-  "processing_time": 1.23
-}
-```
+### Specialized Agents (`rag/generator.py`)
+Each agent has a unique system prompt in `rag/prompts.py`:
+- **Knowledge Search Agent** - RAG with vector search
+- **Patient Lookup Agent** - FHIR queries with function calling
+- **Travel Request Agent** - Multi-step trip submission
+- **Travel Expense Agent** - Receipt validation and reporting
+- **Conversational Agent** - Greetings and general chat
 
-### Other Endpoints
+### Vector Database (`iris_db.py`)
+- Connects to InterSystems IRIS
+- Manages document chunks and embeddings
+- Performs HNSW-indexed similarity search
 
-- `GET /health` - Health check with database stats
-- `GET /chat/history/{session_id}` - Retrieve conversation history
-- `GET /download/{filename}` - Download source documents
-- `GET /view-pdf/{filename}` - View documents as PDF
-- `POST /query` - Legacy single-turn RAG endpoint
+### FHIR Integration (`fhir/`)
+- Translates Czech queries to FHIR R4 parameters
+- Uses OpenAI function calling
+- Formats results in Czech
+
+### Session Management (`conversation/session_manager.py`)
+- Tracks conversation history per user session
+- Maintains context across multiple queries
+- Configurable history length
+
+---
 
 ## Development
 
-See main README for setup instructions. This section covers backend development specifics.
-
 ### Adding New Agents
 
-1. **Define Intent Pattern** in `rag/router.py`:
-   ```python
-   if "new_pattern" in query.lower():
-       return IntentCategory.NEW_AGENT
-   ```
-
-2. **Create Agent Handler** in `rag/generator.py`:
-   ```python
-   def handle_new_agent(self, query, context):
-       system_prompt = "You are a specialized agent for..."
-       # Agent logic
-       return response
-   ```
-
-3. **Add Role Check** in router if needed:
-   ```python
-   if category == IntentCategory.NEW_AGENT:
-       if user_role not in ["authorized_role"]:
-           return "Access denied"
-   ```
+1. **Define intent** in `rag/router.py`
+2. **Create system prompt** in `rag/prompts.py`
+3. **Add handler** in `rag/generator.py`
+4. **Configure permissions** in `user_info.json` (if restricted)
 
 ### Data Ingestion
 
-Supported formats: `.docx`, `.xlsx`
+Place documents in `raw_data/` and run:
+```bash
+python scripts/ingest_data.py
+```
 
-**Chunking Strategy:**
-- Chunk size: 700 characters
-- Overlap: 100 characters
-- Metadata: department, process_owner, document_name
+**Supported formats:** `.docx`, `.xlsx`
+**Chunking:** 700 characters with 100 character overlap
+**Metadata:** Extracted from filename patterns (department, process owner)
 
-Run ingestion: `python scripts/ingest_data.py`
+### Running the Backend
 
-### API Documentation
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
+```
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+**API Documentation:**
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-## Implementation Notes
+---
 
-### Session Management
-- Multi-user sessions with conversation history
-- Session IDs track context across messages
-- Configurable history length (`max_history_messages`)
+## Implementation Details
 
-### Czech Language Processing
+### Multi-Language Support
 - All system prompts in Czech
-- Date format: dd.mm.yyyy
+- Date formatting: dd.mm.yyyy
 - Gender mapping: male=muž, female=žena
-- Natural language parameter extraction for FHIR
 
 ### Vector Search
-- HNSW indexing for sub-millisecond search
-- Configurable `top_k_results` and `min_relevance_score`
-- Batch embedding generation for efficiency
+- HNSW indexing for fast similarity search
+- Cosine distance metric
+- Configurable top-K and relevance thresholds
 
 ### Error Handling
-- FHIR connection timeouts with retries
+- Graceful agent failures with fallback responses
 - Czech error messages for users
 - Detailed logging for debugging
-- Graceful degradation when agents fail
+- FHIR connection retries
+
+### Session State
+- Session IDs track multi-turn conversations
+- History maintained in memory (can be extended to Redis/DB)
+- Automatic cleanup of old sessions
+
+---
+
+## On-Premise Deployment
+
+To run without external API dependencies:
+
+1. **Deploy vLLM server** with compatible model
+2. **Update `config.py`:**
+   ```python
+   openai_base_url: str = "http://your-vllm-server:8000/v1"
+   ```
+3. **Use local embedding model** (optional):
+   - Replace OpenAI embeddings with local model
+   - Update `ingestion/embedder.py`
+
+The system maintains API compatibility with OpenAI, so minimal code changes are needed.
