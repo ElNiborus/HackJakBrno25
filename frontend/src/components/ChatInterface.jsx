@@ -1508,6 +1508,13 @@ function ChatInterface({ userRole, userId }) {
               >
                 Plat Petra
               </button>
+               <button
+                onClick={() => setInputValue('Dej mi informace o všech mužských pacientech narozených v roce 1971.')}
+                className="example-button"
+                disabled={isLoading}
+              >
+                Muži, pacienti narození 1971
+              </button>             
             </div>
           </div>
         )}
