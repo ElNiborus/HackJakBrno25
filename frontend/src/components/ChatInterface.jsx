@@ -709,7 +709,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
   const [messages, setMessages] = useState([
     {
       type: 'assistant',
-      text: 'Dobrý den! Jsem virtuální asistent FN Brno. Jak vám mohu pomoci?',
+      text: 'Dobrý den! Jsem virtuální asistent FN Brno. Jak Vám mohu pomoci?',
       timestamp: new Date()
     }
   ])
@@ -1583,7 +1583,7 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                 📱 Nákup mobilu
               </button>
               <button
-                onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
+                onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít své auto?')}
                 className="example-button"
                 disabled={false}
               >
