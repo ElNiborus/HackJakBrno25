@@ -48,6 +48,9 @@ function LoginForm({ onLogin }) {
 
   return (
     <div className="login-container">
+      <div className="logo-container">
+        <img src="/Resources/logo_nemocnice_bile.png" alt="FN Brno" className="login-logo" />
+      </div>
       <div className="login-box">
         <div className="login-header">
           <h2>Přihlášení</h2>
@@ -90,7 +93,8 @@ function LoginForm({ onLogin }) {
 
         <div className="login-hint">
           <p className="hint-text">
-            💡 Tip: Přihlašovací kód je první část vašeho emailu (před @)
+            © 2025 Fakultní nemocnice Brno <br />
+            Všechna práva vyhrazena.
           </p>
         </div>
       </div>
