@@ -11,10 +11,10 @@ class Settings(BaseSettings):
 
     # InterSystems IRIS Configuration
     iris_host: str = "localhost"
-    iris_port: int = 1972
+    iris_port: int = 32782  # Mapped host port for FHIR-AI-Hackathon-Kit Docker setup
     iris_namespace: str = "USER"
     iris_username: str = "_SYSTEM"
-    iris_password: str = "SYS"
+    iris_password: str = "ISCDEMO"
 
     # Model Configuration
     embedding_model: str = "text-embedding-3-large"
