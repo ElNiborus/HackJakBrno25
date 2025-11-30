@@ -70,8 +70,8 @@ cp .env.example .env
 # Edit .env and add your OPENAI_API_KEY
 
 # 3. Ingest Data
-cd ..
-python scripts/ingest_data.py
+cd backend
+python ../scripts/ingest_data.py
 
 # 4. Start Backend
 cd backend
@@ -79,7 +79,7 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
 
 # 5. Start Frontend (new terminal)
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
