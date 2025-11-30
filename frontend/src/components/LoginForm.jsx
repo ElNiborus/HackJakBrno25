@@ -72,7 +72,7 @@ function LoginForm({ onLogin }) {
             <label htmlFor="code">Přihlašovací kód</label>
             <input
               id="code"
-              type="text"
+              type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Zadejte kód"
