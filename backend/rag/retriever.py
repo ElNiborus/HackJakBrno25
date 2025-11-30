@@ -15,7 +15,7 @@ class VectorRetriever:
         self.embedder = embedder
         self.settings = get_settings()
 
-    def retrieve(self, query: str, top_k: int = None, min_score: float = None) -> List[Dict]:
+    def retrieve(self, query: str, top_k: int = None, min_score: float = None, allowed_files: List[str] = None) -> List[Dict]:
         """
         Retrieve relevant document chunks for a query.
 
@@ -57,8 +57,12 @@ class VectorRetriever:
                     'process_owner': result[4],
                     'relevance_score': float(result[5])
                 }
-                retrieved_chunks.append(chunk)
+                if allowed_files is not None:
+                    if chunk['document_name'] in allowed_files:
+                        retrieved_chunks.append(chunk)
 
+            logger.info(f"Selected {len(retrieved_chunks)} out of {len(results)} results.")
+            logger.info(f"Filtering based on allowed files: {allowed_files}")
             logger.info(f"Retrieved {len(retrieved_chunks)} relevant chunks")
             return retrieved_chunks
 
