@@ -11,9 +11,11 @@ VIPÍK is an intelligent multi-agent system that serves as a unified interface f
 - 📚 **Knowledge Agent** - Answers questions using hospital documents (RAG with vector search)
 - 🏥 **Patient Lookup Agent** - Searches FHIR database for patient information
 - ✈️ **Business Trip Agent** - Handles travel request submissions and expense reporting
+ 🔊 **Voice/Text Input**: Accepts both text and voice queries from users
 - 🧭 **Router/Classifier** - Orchestrates agents based on user intent and role-based permissions
 
 **🔐 Role-Based Access:** Different employees see have access to different internal documents and functions (e.g., only authorized staff can access patient data, only certain employees can submit trip requests).
+
 
 ### How to request a business trip?
 ![Screenshot](assets/screenshot2_trip_ask.png)
@@ -52,7 +54,10 @@ The system uses a **router-based multi-agent architecture**:
 
 ## Quick Start 🚀
 
-**Prerequisites:** Docker, Python 3.9+, Node.js 18+, OpenAI API key
+**Prerequisites:** Docker, Node.js 18+, OpenAI API key, Python 3.9+ (tested with Python 3.12)
+
+<sub>**(Disclaimer)** For local use make sure you have CORS enabled and use browser that supports [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API), typically Chrome.</sub>
+
 
 ```bash
 # 1. Build and Start InterSystems IRIS Database (with FHIR)
