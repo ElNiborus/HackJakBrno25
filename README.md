@@ -4,6 +4,8 @@
 
 A RAG-based virtual assistant for University Hospital Brno (FN Brno) to help 7,500 employees navigate complex internal structures, processes, and administrative tasks.
 
+**Created for Hack jak Brno 2025 hackathon.**
+
 ## What It Does
 
 An intelligent, **multi-agent system** that serves as a unified interface for hospital employees to navigate complex administrative tasks:
@@ -88,50 +90,6 @@ npm run dev
 
 ---
 
-## Project Structure
-
-### `/backend` - FastAPI Application
-Core RAG implementation with IRIS vector search integration. See [backend/README.md](backend/README.md) for details.
-
-### `/frontend` - React UI
-Chat interface with source attribution and document download. Built with Vite for fast development.
-
-### `/scripts` - Data Ingestion
-`ingest_data.py` processes .docx and .xlsx files from `raw_data/`, chunks them, generates embeddings, and stores in IRIS.
-
-### `/raw_data` - Knowledge Base
-Hospital documents: organizational structure, internal directives, process documentation, and travel expense rules.
-
-### `/FHIR-AI-Hackathon-Kit` - Database Setup
-Docker configuration for InterSystems IRIS with FHIR server. Used for both vector storage and patient lookups.
-
----
-
-## Configuration
-
-### Environment Variables (`backend/.env`)
-
-```env
-OPENAI_API_KEY=your_key_here
-
-# IRIS Database (defaults work with Docker setup)
-IRIS_HOST=localhost
-IRIS_PORT=32782
-IRIS_NAMESPACE=USER
-IRIS_USERNAME=_SYSTEM
-IRIS_PASSWORD=ISCDEMO
-```
-
-### Application Settings (`backend/config.py`)
-
-Change models, RAG parameters, and behavior:
-- Embedding model and dimensions
-- OpenAI model selection
-- Top-K results and relevance thresholds
-- FHIR endpoints
-
----
-
 ## Common Tasks
 
 ### Add New Documents
@@ -166,7 +124,9 @@ npm run dev
 
 ---
 
-## Documentation
+## Additional Documentation
 
-- **[backend/README.md](backend/README.md)** - Backend architecture, API reference, and FHIR integration
+- **[backend/README.md](backend/README.md)** - Backend structure, configuration, and development guide
+- **[frontend/README.md](frontend/README.md)** - Frontend development and deployment
 - **[FHIR-AI-Hackathon-Kit Tutorial](FHIR-AI-Hackathon-Kit/Tutorial/)** - InterSystems IRIS and FHIR guides
+- **[CLAUDE.md](CLAUDE.md)** - Project context for AI assistants
