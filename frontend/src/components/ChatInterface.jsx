@@ -1580,35 +1580,35 @@ function ChatInterface({ userRole, userId, sessionId: userSessionId }) {
                 className="example-button"
                 disabled={false}
               >
-                Nákup mobilu
+                📱 Nákup mobilu
               </button>
               <button
                 onClick={() => setInputValue('Jak si zařídit pracovní cestu? Mohu použít moje auto?')}
                 className="example-button"
                 disabled={false}
               >
-                Pracovní cesta
+                🚗 Pracovní cesta
               </button>
               <button
                 onClick={() => setInputValue('Jaké procesy má oddělení CI?')}
                 className="example-button"
                 disabled={false}
               >
-                Procesy CI
+                📋 Procesy CI
               </button>
               <button
-                onClick={() => setInputValue('Jaký má plat Petr?')}
+                onClick={() => setInputValue('Kde najdu plat Petra?')}
                 className="example-button"
                 disabled={false}
               >
-                Plat Petra
+                💰 Plat Petra
               </button>
                <button
                 onClick={() => setInputValue('Dej mi informace o všech mužských pacientech narozených v roce 1971.')}
                 className="example-button"
                 disabled={false}
               >
-                Muži, pacienti narození 1971
+                🏥 Muži, pacienti narození 1971
               </button>             
             </div>
             </div>
