@@ -23,7 +23,7 @@ An intelligent **multi-agent system** that serves as a unified interface for hos
 
 ### Architecture
 
-![System Architecture](assets/Diagram%20Hackathon.png)
+![System Architecture](assets/Diagram.png)
 
 ### Agentic Architecture
 
