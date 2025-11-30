@@ -17,6 +17,35 @@ An intelligent, **multi-agent system** that serves as a unified interface for ho
 
 ---
 
+## System Overview
+
+### Architecture
+
+![System Architecture](assets/Diagram%20Hackathon.png)
+
+### Agentic Architecture
+
+The system uses a **router-based multi-agent architecture**:
+
+1. **User Query** → Application interface (role-aware)
+2. **Intent Classifier** → Analyzes query and user role to determine which agent to invoke
+3. **Agent Routing** → Delegates to specialized agents:
+   - **Knowledge Search Agent** - Retrieves from vector DB (hospital policies, processes)
+   - **Patient Data Agent** - Queries FHIR database for patient records
+   - **Travel Request Agent** - Handles future business trip submissions
+   - **Travel Expense Agent** - Processes expense reports for past trips
+4. **Response Generation** → Agent returns structured Czech response with sources
+5. **User Interface** → Displays answer with citations and suggested actions
+
+### Extensibility
+
+- **Add New Agents:** Create new specialized agents by defining intent patterns and system prompts
+- **Add New Workflows:** Extend existing agents with multi-step workflows (approval chains, integrations)
+- **On-Premise Deployment:** Replace OpenAI API with vLLM running local models for air-gapped environments
+- **Role Management:** Easily configure new roles and permissions in user configuration
+
+---
+
 ## Quick Start
 
 **Prerequisites:** Docker, Python 3.9+, Node.js 18+, OpenAI API key
@@ -56,51 +85,6 @@ npm run dev
 - **Frontend:** http://localhost:3000
 - **Backend API:** http://localhost:8000
 - **IRIS Portal:** http://localhost:32783/csp/sys/UtilHome.csp (user: `_SYSTEM`, password: `ISCDEMO`)
-
----
-
-## System Overview
-
-### Architecture
-
-![System Architecture](assets/Diagram%20Hackathon.png)
-
-### Agentic Architecture
-
-The system uses a **router-based multi-agent architecture**:
-
-1. **User Query** → Application interface (role-aware)
-2. **Intent Classifier** → Analyzes query and user role to determine which agent to invoke
-3. **Agent Routing** → Delegates to specialized agents:
-   - **Knowledge Search Agent** - Retrieves from vector DB (hospital policies, processes)
-   - **Patient Data Agent** - Queries FHIR database for patient records
-   - **Travel Request Agent** - Handles future business trip submissions
-   - **Travel Expense Agent** - Processes expense reports for past trips
-4. **Response Generation** → Agent returns structured Czech response with sources
-5. **User Interface** → Displays answer with citations and suggested actions
-
-**Example Workflow - Business Trip:**
-- Employee: "Chci podat žádost o pracovní cestu do Prahy" (I want to submit a trip request to Prague)
-- Classifier → Routes to Travel Request Agent
-- Agent → Collects trip details, validates against policies, submits request
-- After trip → Employee submits receipts via Travel Expense Agent for reimbursement
-
-### Technology Stack
-
-- **Frontend:** React + Vite (chat interface)
-- **Backend:** FastAPI + Python (multi-agent orchestration)
-- **Database:** InterSystems IRIS (vector search + FHIR)
-- **Embeddings:** OpenAI text-embedding-3-large (3072D)
-- **LLM:** OpenAI GPT-5 with role-specific system prompts
-  - **On-Premise Option:** Compatible with vLLM + local models (same API interface)
-- **Language:** Czech (all interactions)
-
-### Extensibility
-
-- **Add New Agents:** Create new specialized agents by defining intent patterns and system prompts
-- **Add New Workflows:** Extend existing agents with multi-step workflows (approval chains, integrations)
-- **On-Premise Deployment:** Replace OpenAI API with vLLM running local models for air-gapped environments
-- **Role Management:** Easily configure new roles and permissions in user configuration
 
 ---
 
