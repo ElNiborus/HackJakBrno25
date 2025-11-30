@@ -1,5 +1,7 @@
 # FN Brno Virtual Assistant
 
+![FN Brno Virtual Assistant](assets/cover_photo.png)
+
 A RAG-based virtual assistant for University Hospital Brno (FN Brno) to help 7,500 employees navigate complex internal structures, processes, and administrative tasks.
 
 ## What It Does
@@ -60,18 +62,7 @@ npm run dev
 
 ### Architecture
 
-```
-┌─────────────┐      HTTP      ┌──────────────┐
-│   React     │ ────────────> │   FastAPI    │
-│  Frontend   │ <──────────── │   Backend    │
-└─────────────┘               └──────┬───────┘
-                                     │
-                              ┌──────▼───────────┐
-                              │  InterSystems    │
-                              │  IRIS Vector DB  │
-                              │  + FHIR Server   │
-                              └──────────────────┘
-```
+![System Architecture](assets/Diagram%20Hackathon.png)
 
 ### Technology Stack
 
