@@ -1,24 +1,24 @@
-# FN Brno Virtual Assistant
+# VIPÍK – RAG Based Virtual Assistant
 
 ![FN Brno Virtual Assistant](assets/cover_photo.png)
 
-A RAG-based virtual assistant for University Hospital Brno (FN Brno) to help 7,500 employees navigate complex internal structures, processes, and administrative tasks.
-
-**Created for Hack jak Brno 2025 hackathon.**
+University Hospital Brno (FN Brno) includes three hospitals with over **350 departments** and more than 7,500 employees. When staff members need to get something done, they must navigate **thousands of internal documents** or consult on average three different people. This is a massive overhead.  VIPÍK aims to streamline this process using an **AI-assistant orchestration system**. 
+<sub>Created at Hack jak Brno 2025 hackathon</sub>
 
 ## What It Does 🤖
+VIPÍK is an intelligent multi-agent system that serves as a unified interface for hospital employees to navigate complex administrative tasks:
 
-An intelligent **multi-agent system** that serves as a unified interface for hospital employees to navigate complex administrative tasks:
-
-- 📚 **Knowledge Agent** - Answers questions using hospital documentation (RAG with vector search)
+- 📚 **Knowledge Agent** - Answers questions using hospital documents (RAG with vector search)
 - 🏥 **Patient Lookup Agent** - Searches FHIR database for patient information
 - ✈️ **Business Trip Agent** - Handles travel request submissions and expense reporting
 - 🧭 **Router/Classifier** - Orchestrates agents based on user intent and role-based permissions
 
-**🔐 Role-Based Access:** Different employees see different capabilities based on their permissions (e.g., only authorized staff can access patient data, only employees can submit trip requests).
+**🔐 Role-Based Access:** Different employees see have access to different internal documents and functions (e.g., only authorized staff can access patient data, only certain employees can submit trip requests).
 
-## Example Screenshot
-![Screenshot](assets/screenshot1.png)
+### How to request a business trip?
+![Screenshot](assets/screenshot2_trip_ask.png)
+### Show matched text, Fill out a form
+![Screenshot](assets/screenshot2_trip_show.png)
 ---
 
 ## System Overview 🏗️
@@ -33,7 +33,7 @@ The system uses a **router-based multi-agent architecture**:
 
 1. **User Query** → Application interface (role-aware)
 2. **Intent Classifier** → Analyzes query and user role to determine which agent to invoke
-3. **Agent Routing** → Delegates to specialized agents:
+3. **Orchestrator Agent** → Delegates to specialized agents:
    - **Knowledge Search Agent** - Retrieves from vector DB (hospital policies, processes)
    - **Patient Data Agent** - Queries FHIR database for patient records
    - **Travel Request Agent** - Handles future business trip submissions
