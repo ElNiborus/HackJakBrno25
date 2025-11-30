@@ -1,9 +1,56 @@
 {
-    "1": {
+    "role_file_access":{
+        "public": [
+            "vozidla_vyuzivana_pro_pracovni_cesty.docx",
+            "pracovni_cesty_a_cestovni_nahrady.docx",
+            "organizacni_rad_oddeleni_interniho_auditu_a_kontroly.docx",
+            "organizacni_a_provozni_rad_kancelare_reditele.docx",
+            "organizacni_rad_kliniky_radiologie_a_nuklearni_mediciny.docx",
+            "organizacni_rad_utvaru_namestka_pro_vedu_a_vyzkum.docx",
+            "Zhodnocení procesů OPZ.xlsx",
+            "Zhodnocení procesů OIAK.xlsx",
+            "Zhodnocení procesů Kancelář ředitele.xlsx",
+            "Zhodnocení procesů ÚVV.xlsx",
+            "Zhodnocení procesů EO.xlsx",
+            "Zhodnocení procesů OPV.xlsx",
+            "Zhodnocení procesů OHTS.xlsx",
+            "Zhodnocení procesů IO.xlsx",
+            "Zhodnocení procesů CI.xlsx"
+        ],
+        "by_user_role": {
+            "nurse": [
+                
+            ],
+            "manager": [
+                "Anna Konecna.docx",
+                "Marek Dvorak.docx",
+                "Petr Svoboda.docx"
+            ],
+            "maintenance": [
 
+            ]
+        }
     },
-    "2": {
-        "name": "Jan Novak",
+
+
+    "users": {
+        "1": {
+            "name": "Anna Konecna",
+            "role": "nurse",
+            "file_access": [
+            ]
+        },
+        "2": {
+            "name": "Marek Dvorak",
+            "role": "manager",
+            "file_access": [
+            ]
+        },
+        "3": {
+            "name": "Petr Svoboda",
+            "role": "maintenance",
+            "file_access": [
+            ]
+        }
     }
-    
 }

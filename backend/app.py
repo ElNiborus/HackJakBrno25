@@ -7,7 +7,7 @@ import time
 import os
 from pathlib import Path
 
-from models.schemas import QueryRequest, QueryResponse, ChatRequest, ChatResponse, Message, IntentCategory, ActionType
+from models.schemas import QueryRequest, QueryResponse, ChatRequest, ChatResponse, Message, IntentCategory, ActionType, UserInfo, UsersConfig
 from iris_db import IRISVectorDB
 from ingestion.embedder import EmbeddingGenerator
 from rag.retriever import VectorRetriever
@@ -16,6 +16,8 @@ from conversation.session_manager import SessionManager
 from rag.router import RAGRouter
 from config import get_settings
 from datetime import datetime
+from fhir.client import FHIRClient
+from fhir.executor import FHIRToolExecutor
 
 # Configure logging
 logging.basicConfig(
@@ -31,12 +33,14 @@ retriever = None
 generator = None
 session_manager = None
 rag_router = None
+fhir_client = None
+fhir_tool_executor = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    global db, embedder, retriever, generator, session_manager, rag_router
+    global db, embedder, retriever, generator, session_manager, rag_router, fhir_client, fhir_tool_executor
 
     # Startup
     logger.info("Starting up FN Brno Virtual Assistant API")
@@ -51,9 +55,13 @@ async def lifespan(app: FastAPI):
         logger.info("Initializing embedding generator...")
         embedder = EmbeddingGenerator()
 
+        logger.info("Initializing FHIR client...")
+        fhir_client = FHIRClient(settings)
+        fhir_tool_executor = FHIRToolExecutor(fhir_client)
+
         logger.info("Initializing retriever and generator...")
         retriever = VectorRetriever(db, embedder)
-        generator = ResponseGenerator()
+        generator = ResponseGenerator(fhir_tool_executor)
 
         logger.info("Initializing session manager and RAG router...")
         session_manager = SessionManager()
@@ -196,13 +204,21 @@ async def chat(request: ChatRequest):
     start_time = time.time()
 
     try:
+        # Load user info
+        settings = get_settings()
+        user_data: UserInfo = settings.users_config.users[str(request.user_id)]
+        
         # Log incoming request
-        logger.info("\n" + "=" * 80)
-        logger.info("INCOMING CHAT REQUEST")
-        logger.info("=" * 80)
-        logger.info(f"Query: {request.query}")
-        logger.info(f"Session ID: {request.session_id if request.session_id else 'None (new session)'}")
-        logger.info("=" * 80 + "\n")
+        logger.debug("\n" + "=" * 80)
+        logger.debug("INCOMING CHAT REQUEST")
+        logger.debug("=" * 80)
+        logger.debug(f"Query: {request.query}")
+        logger.debug(f"Session ID: {request.session_id if request.session_id else 'None (new session)'}")
+        logger.debug(f"User ID: {request.user_id}")
+        if user_data:
+            logger.debug(f"User Name: {user_data.name}")
+            logger.debug(f"User Role: {user_data.role}")
+        logger.debug("=" * 80 + "\n")
 
         # Get or create session
         if request.session_id and session_manager.session_exists(request.session_id):
@@ -226,6 +242,7 @@ async def chat(request: ChatRequest):
         category = rag_router.classify_intent(request.query, history)
 
         # Determine if RAG needed based on category
+        # FHIR patient lookup doesn't need traditional RAG but uses tool calling instead
         needs_rag = category in [
             IntentCategory.GENERAL_RAG,
             IntentCategory.TRIP_REQUEST,
@@ -243,7 +260,8 @@ async def chat(request: ChatRequest):
         sources = []
         context = None
         if needs_rag:
-            retrieved_chunks = retriever.retrieve(request.query)
+            allowed_files = settings.users_config.get_allowed_files_for_user(user_data)
+            retrieved_chunks = retriever.retrieve(request.query, allowed_files=allowed_files)
             if retrieved_chunks:
                 # Format context
                 context = retriever.format_context_for_llm(retrieved_chunks)
@@ -268,7 +286,8 @@ async def chat(request: ChatRequest):
             query=request.query,
             context=context,
             history=history,
-            category=category
+            category=category,
+            user_system_prompt=settings.users_config.get_user_system_prompt(request.user_id)
         )
 
         # Create assistant message
@@ -283,17 +302,17 @@ async def chat(request: ChatRequest):
         processing_time = time.time() - start_time
 
         # Log final response
-        logger.info("\n" + "=" * 80)
-        logger.info("CHAT RESPONSE")
-        logger.info("=" * 80)
-        logger.info(f"Session ID: {session_id}")
-        logger.info(f"Intent Category: {category.value}")
-        logger.info(f"Used RAG: {needs_rag}")
-        logger.info(f"Action Type: {action_type.value if action_type else 'None'}")
-        logger.info(f"Number of sources: {len(sources)}")
-        logger.info(f"Processing time: {processing_time:.2f}s")
-        logger.info(f"Assistant Response:\n{answer}")
-        logger.info("=" * 80 + "\n")
+        logger.debug("\n" + "=" * 80)
+        logger.debug("CHAT RESPONSE")
+        logger.debug("=" * 80)
+        logger.debug(f"Session ID: {session_id}")
+        logger.debug(f"Intent Category: {category.value}")
+        logger.debug(f"Used RAG: {needs_rag}")
+        logger.debug(f"Action Type: {action_type.value if action_type else 'None'}")
+        logger.debug(f"Number of sources: {len(sources)}")
+        logger.debug(f"Processing time: {processing_time:.2f}s")
+        logger.debug(f"Assistant Response:\n{answer}")
+        logger.debug("=" * 80 + "\n")
 
         return ChatResponse(
             session_id=session_id,
