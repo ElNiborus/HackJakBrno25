@@ -1,23 +1,45 @@
 # FN Brno Virtual Assistant Backend
 
-FastAPI backend for the University Hospital Brno (FN Brno) virtual assistant with RAG (Retrieval-Augmented Generation), multi-turn conversation, and FHIR patient lookup capabilities.
+FastAPI backend implementing a **multi-agent orchestration system** for University Hospital Brno (FN Brno).
 
 ## Overview
 
-A comprehensive virtual assistant for FN Brno's 7500 employees to navigate complex internal structures, processes, and patient data. The system provides:
+An intelligent agent-based system that unifies access to hospital information systems for 7,500 employees. The backend orchestrates specialized agents to handle different types of queries based on user intent and role-based permissions.
 
-1. **Signpost (Level 1)**: First point of contact for "How, Where, With Whom, and When" guidance
-2. **Guide (Level 2)**: Step-by-step guidance and direct navigation to correct systems/documents/people
-3. **Unified Experience**: Single interface masking underlying system complexity
+### Multi-Agent Architecture
+
+The system uses a **router-based architecture** where a central classifier determines which specialized agent should handle each query:
+
+1. **Intent Classification** - Analyzes user query and session context to determine intent
+2. **Role Verification** - Checks user permissions before routing to restricted agents
+3. **Agent Delegation** - Routes to appropriate specialized agent
+4. **Response Generation** - Agent processes request and returns structured response
+
+**Specialized Agents:**
+- **Knowledge Search Agent** - RAG with vector similarity search for hospital policies and processes
+- **Patient Lookup Agent** - FHIR database queries with function calling (role-restricted)
+- **Travel Request Agent** - Business trip submission workflow (employee role required)
+- **Travel Expense Agent** - Expense reporting with receipt validation (employee role required)
+- **Conversational Agent** - Handles greetings and general chat
+
+**Role-Based Access Control:**
+Users are authenticated with different permission levels (e.g., `employee`, `doctor`, `admin`). The router enforces access control before delegating to restricted agents like Patient Lookup.
+
+**Extensibility:**
+- **New Agents:** Add specialized agents by creating intent patterns and system prompts
+- **New Workflows:** Build multi-step processes with approval chains and external integrations
+- **On-Premise Deployment:** Replace OpenAI with vLLM running local models (API-compatible)
+- **Custom Roles:** Define new permission levels in user configuration
 
 ## Features
 
-- **Intent-Based Routing**: Automatically classifies queries into categories (general knowledge, conversations, travel requests, travel expenses, FHIR patient lookup)
-- **RAG Integration**: Vector similarity search with InterSystems IRIS and OpenAI embeddings
-- **FHIR Patient Lookup**: GPT-5-mini function calling for dynamic patient queries
-- **Multi-turn Conversations**: Session-based conversation history with context management
-- **Czech Language Support**: All prompts, responses, and data processing in Czech
-- **Document Management**: Download and PDF viewing capabilities
+- **Intent-Based Routing** with role-aware access control
+- **RAG Integration** using InterSystems IRIS vector search and OpenAI embeddings
+- **FHIR Patient Lookup** with GPT-5 function calling for natural language queries
+- **Multi-turn Conversations** with session-based context management
+- **Czech Language Support** across all agents and interactions
+- **Document Management** with download and PDF viewing
+- **Workflow Orchestration** for complex multi-step processes (e.g., business trip lifecycle)
 
 ## Architecture
 
@@ -50,8 +72,10 @@ backend/
 - **Backend**: FastAPI with Python 3.11
 - **Vector Database**: InterSystems IRIS with HNSW indexing
 - **Embeddings**: OpenAI text-embedding-3-large (3072 dimensions)
-- **LLM**: GPT-5-mini with OpenAI Responses API
+- **LLM**: GPT-5 with OpenAI API
+  - **On-Premise Alternative**: vLLM with local models (API-compatible, for air-gapped environments)
 - **FHIR Integration**: Custom FHIR R4 Patient endpoint client
+- **Multi-Agent Framework**: Router-based orchestration with role-aware delegation
 
 ## FHIR Patient Lookup Integration
 
@@ -154,15 +178,28 @@ def format_patients_for_czech_response(self, patients):
         # ... format other fields
 ```
 
-## Intent Categories
+## Intent Categories & Agent Routing
 
-The system classifies queries into these categories:
+The router classifies queries into these categories and routes to corresponding agents:
 
-1. **`general_rag`**: Knowledge base queries (policies, processes, contacts, IT)
-2. **`conversational`**: Greetings, small talk, capability questions
-3. **`trip_request`**: Travel request submissions (future travel)
-4. **`trip_expense`**: Travel expense reporting (past travel with receipts)
-5. **`fhir_patient_lookup`**: Patient search queries *(NEW)*
+| Intent Category | Agent | Role Required | Example Query |
+|----------------|-------|---------------|---------------|
+| `general_rag` | Knowledge Search Agent | Any | "Jaké procesy má oddělení CI?" |
+| `conversational` | Conversational Agent | Any | "Ahoj, co umíš?" |
+| `trip_request` | Travel Request Agent | `employee` | "Chci podat žádost o cestu do Prahy" |
+| `trip_expense` | Travel Expense Agent | `employee` | "Jak vyúčtovat cestu? Mám účtenky" |
+| `fhir_patient_lookup` | Patient Lookup Agent | `doctor`, `admin` | "Najdi pacienta jménem Jan Novák" |
+
+**Workflow Example - Business Trip Lifecycle:**
+1. **Request Phase:** Employee uses Travel Request Agent → "Chci jet do Prahy 15.12."
+   - Agent collects details (destination, dates, purpose)
+   - Validates against travel policies
+   - Submits request for approval
+2. **Trip Execution:** Employee travels and collects receipts
+3. **Expense Phase:** Employee uses Travel Expense Agent → "Jak vyúčtovat cestu? Mám účtenky"
+   - Agent guides through expense submission
+   - Validates receipts against policies
+   - Submits for reimbursement processing
 
 ## Configuration
 

@@ -6,13 +6,14 @@ A RAG-based virtual assistant for University Hospital Brno (FN Brno) to help 7,5
 
 ## What It Does
 
-The assistant serves as a first point of contact for employees to find:
-- **Who** to contact for specific tasks
-- **How** to complete administrative procedures
-- **Where** to find relevant documents and forms
-- **What** processes apply to their situation
+An intelligent, **multi-agent system** that serves as a unified interface for hospital employees to navigate complex administrative tasks:
 
-Built with InterSystems IRIS vector search, OpenAI embeddings, and a React frontend.
+- **Knowledge Agent** - Answers questions using hospital documentation (RAG with vector search)
+- **Patient Lookup Agent** - Searches FHIR database for patient information
+- **Business Trip Agent** - Handles travel request submissions and expense reporting
+- **Router/Classifier** - Orchestrates agents based on user intent and role-based permissions
+
+**Role-Based Access:** Different employees see different capabilities based on their permissions (e.g., only authorized staff can access patient data, only employees can submit trip requests).
 
 ---
 
@@ -64,23 +65,42 @@ npm run dev
 
 ![System Architecture](assets/Diagram%20Hackathon.png)
 
+### Agentic Architecture
+
+The system uses a **router-based multi-agent architecture**:
+
+1. **User Query** → Application interface (role-aware)
+2. **Intent Classifier** → Analyzes query and user role to determine which agent to invoke
+3. **Agent Routing** → Delegates to specialized agents:
+   - **Knowledge Search Agent** - Retrieves from vector DB (hospital policies, processes)
+   - **Patient Data Agent** - Queries FHIR database for patient records
+   - **Travel Request Agent** - Handles future business trip submissions
+   - **Travel Expense Agent** - Processes expense reports for past trips
+4. **Response Generation** → Agent returns structured Czech response with sources
+5. **User Interface** → Displays answer with citations and suggested actions
+
+**Example Workflow - Business Trip:**
+- Employee: "Chci podat žádost o pracovní cestu do Prahy" (I want to submit a trip request to Prague)
+- Classifier → Routes to Travel Request Agent
+- Agent → Collects trip details, validates against policies, submits request
+- After trip → Employee submits receipts via Travel Expense Agent for reimbursement
+
 ### Technology Stack
 
 - **Frontend:** React + Vite (chat interface)
-- **Backend:** FastAPI + Python (RAG pipeline)
+- **Backend:** FastAPI + Python (multi-agent orchestration)
 - **Database:** InterSystems IRIS (vector search + FHIR)
 - **Embeddings:** OpenAI text-embedding-3-large (3072D)
-- **LLM:** OpenAI GPT-5 (configurable in `backend/config.py`)
-- **Language:** Czech (all data, prompts, responses)
+- **LLM:** OpenAI GPT-5 with role-specific system prompts
+  - **On-Premise Option:** Compatible with vLLM + local models (same API interface)
+- **Language:** Czech (all interactions)
 
-### Data Flow
+### Extensibility
 
-1. User asks question in Czech
-2. Backend converts query to 3072D vector embedding
-3. IRIS finds top-K similar document chunks (HNSW index, cosine similarity)
-4. Context + query sent to OpenAI GPT
-5. Response generated in Czech with source citations
-6. Frontend displays answer with document references
+- **Add New Agents:** Create new specialized agents by defining intent patterns and system prompts
+- **Add New Workflows:** Extend existing agents with multi-step workflows (approval chains, integrations)
+- **On-Premise Deployment:** Replace OpenAI API with vLLM running local models for air-gapped environments
+- **Role Management:** Easily configure new roles and permissions in user configuration
 
 ---
 
@@ -162,40 +182,7 @@ npm run dev
 
 ---
 
-## Troubleshooting
-
-### Can't Connect to IRIS
-**Error:** `Access Denied` or `Failed to connect`
-
-**Solution:**
-1. Check `IRIS_PORT=32782` in `backend/.env` (NOT 1972)
-2. Check `IRIS_PASSWORD=ISCDEMO` in `backend/.env` (NOT SYS)
-3. Verify container is running: `docker ps | grep iris-fhir`
-4. Wait 2 minutes after `docker-compose up -d` for full initialization
-
-### No Search Results
-- Check that data ingestion completed successfully
-- Verify chunk count: `curl http://localhost:8000/health`
-- Lower `min_relevance_score` in `backend/config.py`
-
-### Frontend Can't Reach Backend
-- Ensure backend is running on port 8000
-- Check CORS settings in `backend/app.py`
-- Verify Vite proxy in `frontend/vite.config.js`
-
----
-
 ## Documentation
 
 - **[backend/README.md](backend/README.md)** - Backend architecture, API reference, and FHIR integration
 - **[FHIR-AI-Hackathon-Kit Tutorial](FHIR-AI-Hackathon-Kit/Tutorial/)** - InterSystems IRIS and FHIR guides
-- **[CLAUDE.md](CLAUDE.md)** - Project context for AI assistants
-
----
-
-## Example Queries
-
-- *"Co mám dělat, když si chci koupit nový mobil?"* (IT purchase procedures)
-- *"Jak si zařídit pracovní cestu? Mohu použít moje auto?"* (Travel arrangements)
-- *"Jaké procesy má oddělení CI?"* (Department processes)
-- *"Kdo je zodpovědný za IT nákupy?"* (Process owners)
