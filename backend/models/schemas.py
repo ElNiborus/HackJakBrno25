@@ -11,6 +11,7 @@ class IntentCategory(str, Enum):
     CONVERSATIONAL = "conversational"
     TRIP_REQUEST = "trip_request"
     TRIP_EXPENSE = "trip_expense"
+    FHIR_PATIENT_LOOKUP = "fhir_patient_lookup"
 
 
 class ActionType(str, Enum):
