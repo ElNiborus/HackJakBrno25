@@ -2,7 +2,7 @@
 
 ![FN Brno Virtual Assistant](assets/cover_photo.png)
 
-University Hospital Brno (FN Brno) includes three hospitals with over **350 departments** and more than 7,500 employees. When staff members need to get something done, they must navigate **thousands of internal documents** or consult on average three different people. This is a massive overhead.  VIPÍK aims to streamline this process using an **AI-assistant orchestration system**. 
+University Hospital Brno (FN Brno) includes three hospitals with over **350 departments** and more than 7,500 employees. When staff members need to get something done, they must navigate **hundreds of internal documents** or consult on average three different people. This is a massive overhead.  VIPÍK aims to streamline this process using an **AI-assistant orchestration system**. 
 <sub>Created at Hack jak Brno 2025 hackathon</sub>
 
 ## What It Does 🤖
